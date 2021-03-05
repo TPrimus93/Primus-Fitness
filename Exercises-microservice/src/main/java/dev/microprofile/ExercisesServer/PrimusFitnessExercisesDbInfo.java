@@ -37,9 +37,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @RequestScoped
-@RolesAllowed({"oswego.edu"})
-@Path("/courses")
-public class QuizMakerCoursesDbInfo {
+//@RolesAllowed({"oswego.edu"})
+@Path("/exercises")
+public class PrimusFitnessExercisesDbInfo {
     // Creates login username and password
     MongoCredential frontendAuth = MongoCredential.createScramSha1Credential("frontend", "coursesDB", "CsC480OswegoFrontendXD".toCharArray());
     // Creates the db-server address whicBuilder builder = MongoClientOptions.builder().connectTimeout(3000);  h  is locally hosted currently (Unable to access with outside machine (working))

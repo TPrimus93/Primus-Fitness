@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>primus-fitness</artifactId>
-        <groupId>quiz.maker</groupId>
+        <groupId>primus.fitness</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 

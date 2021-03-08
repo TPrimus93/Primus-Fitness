@@ -23,7 +23,12 @@
 package dev.microprofile.ExercisesServer;
 
 import com.mongodb.*;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import javax.annotation.security.RolesAllowed;
@@ -36,6 +41,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 @RequestScoped
 //@RolesAllowed({"oswego.edu"})
@@ -51,28 +57,38 @@ public class PrimusFitnessExercisesDbInfo {
 
 
     //Connects to the specific db we want;
-    MongoDatabase database = mongoClient.getDatabase("test");
+    MongoDatabase database = mongoClient.getDatabase("Exercises");
+    //Bodyweight collection
+    MongoCollection<Document> bWc = database.getCollection("Bodyweight");
 
     //Dumps whole db
-   // @Path("/all")
-   // @GET
-   // @Produces(MediaType.APPLICATION_JSON)
-   // public Response dbDump(){
-   //     //Variable decelerations
-   //     String dbInfo="[";
-   //     //Gathers the specific collection we want
-   //     DBCollection collection = database.getCollection("courses");
-   //     DBCursor cursor = collection.find();
-   //     //Iterate through each db hit and amend it to a string
-   //     while (cursor.hasNext()) {
-   //         dbInfo = dbInfo.concat(cursor.next().toString());
-   //         if (cursor.hasNext()){
-   //             dbInfo = dbInfo.concat(",");
-   //         }
-   //     }
-   //     dbInfo = dbInfo.concat("]");
-   //     mongoClient.close();
-   //     return Response.ok(dbInfo, MediaType.APPLICATION_JSON).build();
-   // }
+    @Path("/all")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response dbDump(){
+        //Variable decelerations
+        String dbInfo = "";
+        //Gathers the specific collection we want
+        System.out.println("Check one");
+
+        FindIterable<Document> document = bWc.find();
+        System.out.println("Check two");
+        //Iterate through each db hit and amend it to a string
+        for (Document doc: document){
+            dbInfo = dbInfo.concat(doc.toJson());
+        }
+        System.out.println(dbInfo);
+        mongoClient.close();
+        return Response.ok(dbInfo, MediaType.APPLICATION_JSON).build();
+    }
+
+    @Path("/addExercises")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addExercises(JsonObject test){
+        Document doc = Document.parse(test.toString());
+        bWc.insertOne(doc);
+        return Response.ok().build();
+    }
 
 }

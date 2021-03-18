@@ -592,5 +592,3 @@ curl --location --request DELETE 'http://localhost:9080/PrimusWebProject/jobs/3'
 | clientID | int | Clients ID
 | employeeID | int | Employee ID
 | hours | double | Job Hours
-
-# Model-View-Controller Diagrams

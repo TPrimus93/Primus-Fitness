@@ -1,47 +1,51 @@
 import React, { useState } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View, TextInput } from 'react-native';
+import HomeScreen from '../screens/HomeScreen';
 
 
+function LoginScreen() {
 
-class LoginScreen extends Component {
-    const[username, password] = usestate(null)
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
 
-
-    render() {
-        return (
-            <View style={styles.container} >
-                <Image style={styles.logo} opacity={0.8} source={require('../assets/Primus_Fitness_Logo.png')} />
-                <View style={styles.inputView} >
-                    <TextInput
-                        style={styles.inputText}
-                        placeholder="Username"
-                        onChangeText={text => this.setState({ username: text })}
-                    />
-                </View>
-                <View style={styles.inputView} >
-                    <TextInput style={styles.inputText}
-                        secureTextEntry
-                        placeholder="Password"
-                        onChangeText={text => this.setState({ password: text })}
-                    />
-                </View>
-                <TouchableOpacity style={styles.loginButton} onPress={console.log("Logged in")} >
-                    <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
-
-            </View>
-
-
-        );
+    function handleClick() {
+        return <HomeScreen />;
     }
+
+    return (
+        <View style={styles.container} >
+            <Image style={styles.logo} source={require('../assets/Primus_Fitness_Logo.png')} />
+            <View style={styles.inputView} >
+                <TextInput
+                    style={styles.inputText}
+                    placeholder="Username"
+                    textAlign='center'
+                    onChangeText={(username) => setUsername(username)}
+                />
+            </View>
+            <View style={styles.inputView} >
+                <TextInput style={styles.inputText}
+                    secureTextEntry
+                    placeholder="Password"
+                    textAlign='center'
+                    onChangeText={(password) => setPassword(password)}
+                />
+            </View>
+            <TouchableOpacity style={styles.loginButton} onPress={() => handleClick()}>
+                <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'black',
-        justifyContent: "center",
-        alignItems: 'center'
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        opacity: 0.8
     },
     loginButton: {
         width: "75%",
@@ -85,3 +89,5 @@ const styles = StyleSheet.create({
         width: 400
     }
 });
+
+export default LoginScreen;

@@ -20,75 +20,85 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package dev.microprofile.ExercisesServer;
+package microprofile.UserServer;
 
-import com.mongodb.*;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import org.bson.BsonValue;
 import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 
-import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.ws.rs.*;
+import javax.json.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import com.google.gson.Gson;
+import org.bson.conversions.Bson;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.function.Consumer;
 
 @RequestScoped
 //@RolesAllowed({"oswego.edu"})
-@Path("/exercises")
-public class PrimusFitnessExercisesDbInfo {
+@Path("/user")
+public class PrimusFitnessUserAPI {
     // Creates login username and password
 
-    // Creates the db-server address which  is locally hosted currently (Unable to access with outside machine (working))
+    // Creates the db-server address
     MongoClientURI uri = new MongoClientURI(
             "mongodb+srv://PrimusAdmin:Fitness101@primusfitnesscluster.t2eiv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority");
-    //
+    //Connection
     MongoClient mongoClient = new MongoClient(uri);
 
 
     //Connects to the specific db we want;
-    MongoDatabase database = mongoClient.getDatabase("Exercises");
-    //Bodyweight collection
-    MongoCollection<Document> bWc = database.getCollection("Bodyweight");
+    MongoDatabase database = mongoClient.getDatabase("Users");
+    //Users collection
+    MongoCollection<Document> users = database.getCollection("users");
 
-    //Dumps whole db
+    //Dumps whole db (Testing purposes)
     @Path("/all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response dbDump(){
-        //Variable decelerations
-        String dbInfo = "";
+        ArrayList<String> documents = new ArrayList<>();
         //Gathers the specific collection we want
         System.out.println("Check one");
-
-        FindIterable<Document> document = bWc.find();
+        FindIterable<Document> document = users.find();
         System.out.println("Check two");
         //Iterate through each db hit and amend it to a string
         for (Document doc: document){
-            dbInfo = dbInfo.concat(doc.toJson());
+            documents.add(doc.toJson());
         }
-        System.out.println(dbInfo);
+
+        System.out.println(documents);
         mongoClient.close();
-        return Response.ok(dbInfo, MediaType.APPLICATION_JSON).build();
+        return Response.ok(documents.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    @Path("/addExercises")
+    @Path("/addUser")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response addExercises(JsonObject test){
+        //check user bf doing anything here
         Document doc = Document.parse(test.toString());
-        bWc.insertOne(doc);
+        users.insertOne(doc);
         return Response.ok().build();
+    }
+
+    @Path("/loginAttempt")
+    @POST
+    public Response.Status validateLogin(JsonObject userCredentials){
+        Document lookUp = new Document();
+        lookUp.append("firstName", userCredentials.get("firstName"));
+        System.out.println(lookUp.toJson());
+        return Response.Status.OK;
+
     }
 
 }

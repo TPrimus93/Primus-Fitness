@@ -24,5 +24,6 @@
 
     <modules>
         <module>Exercises-microservice</module>
+        <module>Users-microservice</module>
     </modules>
 </project>

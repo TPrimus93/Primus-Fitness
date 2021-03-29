@@ -32,15 +32,13 @@ import org.bson.Document;
 
 import javax.enterprise.context.RequestScoped;
 import javax.json.*;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import com.google.gson.Gson;
 import org.bson.conversions.Bson;
 
+import java.net.URI;
 import java.util.ArrayList;
 
 @RequestScoped
@@ -81,23 +79,33 @@ public class PrimusFitnessUserAPI {
         return Response.ok(documents.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    @Path("/addUser")
+    @Path("/createUser")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response addExercises(JsonObject test){
+        System.out.println(test.toString());
         //check user bf doing anything here
         Document doc = Document.parse(test.toString());
         users.insertOne(doc);
         return Response.ok().build();
     }
 
-    @Path("/loginAttempt")
-    @POST
-    public Response.Status validateLogin(JsonObject userCredentials){
+    @Path("/loginAttempt/{userName}/{password}")
+    @GET
+
+    public Response validateLogin(@PathParam("userName") String userName, @PathParam("password") String password){
+        //Create an empty document to store look up var's
         Document lookUp = new Document();
-        lookUp.append("firstName", userCredentials.get("firstName"));
+        lookUp.append("userName", userName);
+        lookUp.append("password", password);
         System.out.println(lookUp.toJson());
-        return Response.Status.OK;
+        FindIterable<Document> findUser = users.find(lookUp);
+        //Find the user that matches that userName and password combination;
+        if(findUser.cursor().hasNext()){
+            return Response.temporaryRedirect(URI.create("http://www.google.com/")).build();
+        }else {
+            return Response.status(401).build();
+        }
 
     }
 

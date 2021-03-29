@@ -24,7 +24,7 @@
                jwksUri="https://www.googleapis.com/oauth2/v3/certs"/>
 
 
-    <cors domain="/"
+    <cors domain="*"
       allowedOrigins="*"
       allowedMethods="POST, GET, DELETE, PUT"
       allowedHeaders="*"

@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text, ScrollView } from "react-native";
-
+import { Text, Image, StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView } from 'react-native';
 import Navbar from '../screens/Navbar';
+import axios from 'axios';
 
-function HomeScreen() {
+
+function ExerciseScreen() {
+
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+
 
     return (
-        <SafeAreaView style={styles.container} >
+        <SafeAreaView style={styles.container}>
             <Navbar />
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
@@ -26,6 +31,7 @@ function HomeScreen() {
 
 }
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -33,19 +39,19 @@ const styles = StyleSheet.create({
         backgroundColor: 'black',
     },
     scrollContainer: {
-        alignItems: 'center'
+        alignItems: 'center',
     },
     centerButton: {
-        width: 175,
-        height: 175,
-        borderRadius: 90,
+        width: "100%",
+        height: 100,
         borderColor: "#707070",
         borderWidth: 2,
         backgroundColor: "#E51B23",
-        marginBottom: 50,
-        marginTop: 50,
+        marginBottom: 25,
+        marginTop: 25,
         elevation: 8,
         justifyContent: "center",
+        alignSelf: 'stretch'
 
     },
     buttonText: {
@@ -62,4 +68,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default HomeScreen;
+export default ExerciseScreen;

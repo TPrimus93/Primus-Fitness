@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View, TextInput } from 'react-native';
-import HomeScreen from '../screens/HomeScreen';
+import axios from 'axios';
 
 
-function LoginScreen() {
+function LoginScreen({ navigation }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-
-    function handleClick() {
-        return <HomeScreen />;
-    }
 
     return (
         <View style={styles.container} >
@@ -31,13 +27,15 @@ function LoginScreen() {
                     onChangeText={(password) => setPassword(password)}
                 />
             </View>
-            <TouchableOpacity style={styles.loginButton} onPress={() => handleClick()}>
+            <TouchableOpacity style={styles.loginButton}
+                onPress={() => navigation.navigate('Home')}>
                 <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
         </View>
     );
 
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -91,3 +89,6 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
+
+// axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
+//                     .then(response => alert(JSON.stringify(response.data))).catch(e => console.log(e))

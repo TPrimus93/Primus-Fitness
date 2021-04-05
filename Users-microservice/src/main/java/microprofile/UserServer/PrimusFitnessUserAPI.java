@@ -22,6 +22,8 @@
 
 package microprofile.UserServer;
 
+import com.ibm.websphere.security.jwt.JwtBuilder;
+import com.ibm.websphere.security.jwt.Claims;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
@@ -30,6 +32,7 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.BsonValue;
 import org.bson.Document;
 
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.json.*;
 import javax.ws.rs.*;
@@ -37,12 +40,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import com.google.gson.Gson;
 import org.bson.conversions.Bson;
+import org.eclipse.microprofile.health.Liveness;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-@RequestScoped
-//@RolesAllowed({"oswego.edu"})
 @Path("/user")
 public class PrimusFitnessUserAPI {
     // Creates login username and password
@@ -60,6 +65,7 @@ public class PrimusFitnessUserAPI {
     MongoCollection<Document> users = database.getCollection("users");
 
     //Dumps whole db (Testing purposes)
+    @RolesAllowed({"trainer"})
     @Path("/all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -78,7 +84,7 @@ public class PrimusFitnessUserAPI {
         mongoClient.close();
         return Response.ok(documents.toString(), MediaType.APPLICATION_JSON).build();
     }
-
+    @RolesAllowed({"trainer"})
     @Path("/createUser")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -92,6 +98,7 @@ public class PrimusFitnessUserAPI {
 
     @Path("/loginAttempt/{userName}/{password}")
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
 
     public Response validateLogin(@PathParam("userName") String userName, @PathParam("password") String password){
         //Create an empty document to store look up var's
@@ -102,11 +109,30 @@ public class PrimusFitnessUserAPI {
         FindIterable<Document> findUser = users.find(lookUp);
         //Find the user that matches that userName and password combination;
         if(findUser.cursor().hasNext()){
-            return Response.temporaryRedirect(URI.create("http://www.google.com/")).build();
+            Set<String> roles = new HashSet<>();
+            Document foundUser = findUser.cursor().next();
+            roles.add("user");
+            roles.add("trainer");
+            String jwt = null;
+            try {
+                jwt = buildJwt(userName,roles);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            return Response.ok(jwt, MediaType.APPLICATION_JSON).build();
         }else {
             return Response.status(401).build();
         }
 
+    }
+
+    private String buildJwt(String userName, Set<String> roles) throws Exception {
+        return JwtBuilder.create("jwtBuilder")
+                .claim(Claims.SUBJECT, userName)
+                .claim("upn", userName)
+                .claim("groups", roles)
+                .buildJwt()
+                .compact();
     }
 
 }

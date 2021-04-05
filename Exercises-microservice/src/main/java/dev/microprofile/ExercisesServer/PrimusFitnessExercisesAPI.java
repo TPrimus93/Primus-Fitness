@@ -39,12 +39,14 @@ import javax.json.JsonValue;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 @RequestScoped
-//@RolesAllowed({"oswego.edu"})T
+//@RolesAllowed({"user"})
 @Path("/exercises")
 public class PrimusFitnessExercisesAPI {
     // Creates login username and password
@@ -58,38 +60,91 @@ public class PrimusFitnessExercisesAPI {
 
     //Connects to the specific db we want;
     MongoDatabase database = mongoClient.getDatabase("Exercises");
-    //Bodyweight collection
+    //Body weight collection
     MongoCollection<Document> bWc = database.getCollection("Bodyweight");
+    //WeightTraining collection
+    MongoCollection<Document> wTc = database.getCollection("WeightTraining");
+    //Recovery collection
+
 
     //Dumps whole db
+    //testing mostly
     @Path("/all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response dbDump(){
         //Variable decelerations
-        String dbInfo = "[";
-        //Gathers the specific collection we want
-        System.out.println("Check one");
+        ArrayList<String> toplevel = new ArrayList<>();
 
         FindIterable<Document> document = bWc.find();
-        System.out.println("Check two");
         //Iterate through each db hit and amend it to a string
         for (Document doc: document){
-            dbInfo = dbInfo.concat(doc.toJson()) + ",";
+            toplevel.add(doc.toJson());
         }
-        dbInfo = dbInfo.concat("{\"end\":\"done\"}]");
-        System.out.println(dbInfo);
-        mongoClient.close();
-        return Response.ok(dbInfo, MediaType.APPLICATION_JSON).build();
+
+        System.out.println(toplevel);
+        return Response.ok(toplevel.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    @Path("/addExercises")
+    @Path("/addExerciseBranch")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addExercises(JsonObject test){
-        Document doc = Document.parse(test.toString());
-        bWc.insertOne(doc);
-        return Response.ok().build();
+    public Response addExercises(JsonObject freshNode){
+        String rootType = freshNode.get("root").toString().replace("\"", "");
+        System.out.println(rootType);
+        switch (rootType){
+
+            case "Bodyweight" :{
+                //Grab just the id number
+                String parentValue = freshNode.get("parentNode").toString().subSequence(10, 34).toString();
+                ObjectId parentId = new ObjectId(parentValue);
+                Document oldParentNode = new Document();
+                oldParentNode.append("_id", parentId);
+                FindIterable<Document> parentFound = bWc.find(oldParentNode);
+                Document parentNode = parentFound.cursor().next();
+                List<ObjectId> childrenBranches = parentNode.getList("children", ObjectId.class);
+                //create fresh document for new branch
+                Document freshBranch = new Document();
+                freshBranch.append("branchName", freshNode.get("branchName").toString().replace("\"", ""));
+                freshBranch.append("type",  "branch");
+                freshBranch.append("children", new ArrayList<ObjectId>());
+                bWc.insertOne(freshBranch);
+                FindIterable<Document> yanked = bWc.find(freshBranch);
+                String freshBranchID = yanked.cursor().next().get("_id").toString();
+                System.out.println(freshBranchID);
+                ObjectId fBchildren = new ObjectId(freshBranchID);
+                childrenBranches.add(fBchildren);
+                parentNode.replace("childern", fBchildren);
+                bWc.findOneAndReplace(oldParentNode, parentNode);
+                return Response.ok().build();
+            }
+            //case "plyometrics" :{
+
+            //}
+
+            default:{
+                return Response.serverError().build();
+            }
+        }
     }
+
+    //Body weight collection API
+    @Path("/plyometrics/all")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response allBodyWeightBranches(){
+        //Variable decelerations
+        ArrayList<String> toplevel = new ArrayList<>();
+
+        FindIterable<Document> document = bWc.find();
+        //Iterate through each db hit and amend it to an array list
+        for (Document doc: document){
+            toplevel.add(doc.toJson());
+        }
+        //Return response in the for of a string
+        return Response.ok(toplevel.toString(), MediaType.APPLICATION_JSON).build();
+    }
+
+    //@Path("/plyometrics/")
 
 }

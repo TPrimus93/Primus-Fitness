@@ -1,4 +1,4 @@
-<server description="Liberty server">
+<server description="User server">
     <featureManager>
         <feature>jsp-2.3</feature>
         <feature>mpJwt-1.1</feature>
@@ -12,7 +12,11 @@
 
     <webApplication location="UserServer.war" contextRoot="${app.context.root}"/>
 
-    <keyStore id="defaultKeyStore" password="keyspass" />
+    <keyStore id="defaultKeyStore" password="keysPass" />
+
+    <jwtBuilder id="jwtBuilder" issuer="http://68.172.33.6:9081/" expiry="24h" keyAlias="default" keyStoreRef="defaultKeyStore" trustStoreRef="defaultKeyStore"/>
+
+    <mpJwt audiences="ALL_AUDIENCES" groupNameAttribute="groups" id="mympjwt" userNameAttribute="upn" issuer="http://68.172.33.6:9081/" keyName="default" />
 
     <ssl id="sslSettings" trustDefaultCerts="true" keyStoreRef="defaultKeyStore" trustStoreRef="defaultKeyStore" />
 
@@ -20,11 +24,7 @@
 
     <logging traceSpecification="com.ibm.ws.security*=all:com.ibm.ws.webcontainer.security.*=all:io.openliberty.security.*=all"/>
 
-    <mpJwt id="mympjwt" issuer="accounts.google.com" groupNameAttribute="hd" audiences="ALL_AUDIENCES" userNameAttribute="email"
-               jwksUri="https://www.googleapis.com/oauth2/v3/certs"/>
-
-
-    <cors domain="*"
+    <cors domain="/"
       allowedOrigins="*"
       allowedMethods="POST, GET, DELETE, PUT"
       allowedHeaders="*"

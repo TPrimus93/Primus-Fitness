@@ -1,4 +1,4 @@
-package microprofile.health;
+package microprofile;
 
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;

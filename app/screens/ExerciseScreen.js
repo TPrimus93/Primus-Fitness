@@ -1,26 +1,21 @@
 import React, { useState } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView } from 'react-native';
-import Navbar from '../screens/Navbar';
+import Navbar from '../Components/Navbar';
 import axios from 'axios';
+import ExerciseButton from '../Components/ExerciseButton';
 
 
 function ExerciseScreen() {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-
-
     return (
         <SafeAreaView style={styles.container}>
             <Navbar />
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    <TouchableOpacity style={styles.centerButton} >
-                        <Text style={styles.buttonText}>Weight Training</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.centerButton} >
-                        <Text style={styles.buttonText}>Recovery</Text>
-                    </TouchableOpacity>
+                    <ExerciseButton />
+                    <ExerciseButton />
                     <TouchableOpacity style={styles.centerButton} >
                         <Text style={styles.buttonText}>Plyometrics</Text>
                     </TouchableOpacity>
@@ -28,7 +23,6 @@ function ExerciseScreen() {
             </View>
         </SafeAreaView>
     );
-
 }
 
 
@@ -42,30 +36,43 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     centerButton: {
-        width: "100%",
-        height: 100,
-        borderColor: "#707070",
-        borderWidth: 2,
-        backgroundColor: "#E51B23",
-        marginBottom: 25,
-        marginTop: 25,
-        elevation: 8,
-        justifyContent: "center",
-        alignSelf: 'stretch'
-
+        height: 80,
+        borderColor: "#E51B23",
+        borderWidth: 3,
+        marginBottom: 10,
+        marginTop: 10,
+        alignSelf: 'stretch',
+        flexDirection: 'row',
+        justifyContent: 'flex-start'
     },
     buttonText: {
-        fontSize: 25,
-        color: 'black',
+        marginTop: 5,
+        fontSize: 35,
+        marginRight: "20%",
+        color: '#E51B23',
         fontWeight: "bold",
-        alignSelf: "center",
-        opacity: 0.8,
-        textAlign: 'center'
+        textAlign: 'left'
     },
     buttonMenu: {
         top: 120,
         marginBottom: 100,
+        width: '99%'
+    },
+    plusButton: {
+        marginRight: 15,
+        marginLeft: 15,
+        marginTop: 25,
+
+    },
+    rightArrow: {
+        marginTop: 25,
+        marginRight: 10,
+        marginLeft: 25
+    },
+    exerciseIcon: {
+
     }
+
 });
 
 export default ExerciseScreen;

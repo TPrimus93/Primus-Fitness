@@ -12,7 +12,7 @@ function Navbar({ }) {
             <TouchableOpacity style={styles.barbell} onPress={() => navigation.navigate('Exercise')}>
                 <Image source={require('../assets/metro-barbell.png')} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.featherMenu} >
+            <TouchableOpacity style={styles.featherMenu} onPress={() => navigation.navigate('Workout')} >
                 <Image source={require('../assets/feather-menu.png')} />
             </TouchableOpacity>
         </View>

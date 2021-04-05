@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text, ScrollView } from "react-native";
 
-import Navbar from '../screens/Navbar';
+import Navbar from '../Components/Navbar';
 
 function HomeScreen() {
 

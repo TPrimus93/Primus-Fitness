@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text, ScrollView } from "react-native";
 
 import Navbar from '../Components/Navbar';
 
-function HomeScreen() {
+function HomeScreen({ route, navigation }) {
+
+    // function changeBranches(url){
+    //     a
+    // }
 
     return (
         <SafeAreaView style={styles.container} >
             <Navbar />
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    <TouchableOpacity style={styles.centerButton} >
+                    <TouchableOpacity style={styles.centerButton} onPress={() => console.log(route.params.myJwt)}>
                         <Text style={styles.buttonText}>Weight Training</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.centerButton} >
@@ -23,7 +29,6 @@ function HomeScreen() {
             </View>
         </SafeAreaView>
     );
-
 }
 
 const styles = StyleSheet.create({

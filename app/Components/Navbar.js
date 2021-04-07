@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
+import DropDownPicker from 'react-native-dropdown-picker';
 
 function Navbar({ }) {
     const navigation = useNavigation();
@@ -45,6 +45,11 @@ const styles = StyleSheet.create({
         top: 78,
         right: 20,
         elevation: 8,
+    },
+    dropdown: {
+        height: 40,
+        top: 40,
+        width: 30
     }
 });
 

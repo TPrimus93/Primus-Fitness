@@ -3,10 +3,17 @@ import { Text, Image, StyleSheet, TouchableOpacity, View, TextInput } from 'reac
 import axios from 'axios';
 
 
+
+
 function LoginScreen({ navigation }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+
+    function login() {
+        axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
+            .then(response => navigation.navigate('Home', { myJwt: response.data, user: username, })).catch(e => console.log(e));
+    }
 
     return (
         <View style={styles.container} >
@@ -28,7 +35,7 @@ function LoginScreen({ navigation }) {
                 />
             </View>
             <TouchableOpacity style={styles.loginButton}
-                onPress={() => navigation.navigate('Home')}>
+                onPress={() => login()}>
                 <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
         </View>
@@ -90,5 +97,6 @@ const styles = StyleSheet.create({
 
 export default LoginScreen;
 
-// axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
-//                     .then(response => alert(JSON.stringify(response.data))).catch(e => console.log(e))
+// () => axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
+//                     .then(response => setjwt(response.data)).catch(e => console.log(e))
+//                     .then(console.log(jwt)).then(() => navigation.navigate('Home', props = { jwt }))

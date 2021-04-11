@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View, TextInput } from 'react-native';
 import axios from 'axios';
 
@@ -12,7 +12,12 @@ function LoginScreen({ navigation }) {
 
     function login() {
         axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
-            .then(response => navigation.navigate('Home', { myJwt: response.data, user: username, })).catch(e => console.log(e));
+            .then(response => componentDidMount(response.data)).catch(e => console.log(e));
+    }
+
+    function componentDidMount(myjwt) {
+        axios.get('http://68.172.33.6:9083/exercises/allRoots')
+            .then(response => navigation.navigate('Home', { myJwt: myjwt, user: username, branches: response.data, })).catch(e => console.log(e));
     }
 
     return (

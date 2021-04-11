@@ -4,27 +4,26 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text, ScrollView } from "react-native";
 
 import Navbar from '../Components/Navbar';
+import BranchButton from '../Components/BranchButton';
 
 function HomeScreen({ route, navigation }) {
 
-    // function changeBranches(url){
-    //     a
-    // }
+
+    const [branches, setBranches] = useState(route.params.branches);
+
+    function consolelog() {
+        console.log(branches);
+        console.log(route.params);
+    }
 
     return (
+
         <SafeAreaView style={styles.container} >
+            {consolelog()}
             <Navbar />
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    <TouchableOpacity style={styles.centerButton} onPress={() => console.log(route.params.myJwt)}>
-                        <Text style={styles.buttonText}>Weight Training</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.centerButton} >
-                        <Text style={styles.buttonText}>Recovery</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.centerButton} >
-                        <Text style={styles.buttonText}>Plyometrics</Text>
-                    </TouchableOpacity>
+                    {branches.map((branch) => <BranchButton key={branch._id.$oid} title={branch.branchName} press={route.params.myJwt} />)}
                 </ScrollView>
             </View>
         </SafeAreaView>
@@ -68,3 +67,11 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
+/* <TouchableOpacity style={styles.centerButton} onPress={() => console.log(route.params.myJwt)}>
+                        <Text style={styles.buttonText}>Weight Training</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.centerButton} >
+                        <Text style={styles.buttonText}>Recovery</Text>
+                    </TouchableOpacity>
+                    <BranchButton title={'Extra'} /> */

@@ -119,6 +119,7 @@ public class PrimusFitnessUserAPI {
             } catch (Exception e){
                 e.printStackTrace();
             }
+            System.out.println(jwt);
             return Response.ok(jwt, MediaType.APPLICATION_JSON).build();
         }else {
             return Response.status(401).build();

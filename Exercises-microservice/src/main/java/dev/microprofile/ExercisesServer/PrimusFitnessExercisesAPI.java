@@ -60,83 +60,78 @@ public class PrimusFitnessExercisesAPI {
 
     //Connects to the specific db we want;
     MongoDatabase database = mongoClient.getDatabase("Exercises");
-    //Body weight collection
-    MongoCollection<Document> bWc = database.getCollection("Bodyweight");
-    //WeightTraining collection
-    MongoCollection<Document> wTc = database.getCollection("WeightTraining");
-    //Recovery collection
+    //ExerciseTree collection
+    MongoCollection<Document> tree = database.getCollection("ExerciseTree");
 
-
-    //Dumps whole db
-    //testing mostly
-    @Path("/all")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response dbDump(){
-        //Variable decelerations
-        ArrayList<String> toplevel = new ArrayList<>();
-
-        FindIterable<Document> document = bWc.find();
-        //Iterate through each db hit and amend it to a string
-        for (Document doc: document){
-            toplevel.add(doc.toJson());
-        }
-
-        System.out.println(toplevel);
-        return Response.ok(toplevel.toString(), MediaType.APPLICATION_JSON).build();
-    }
-
+    //Adds a branch node to any location based on the json input
     @Path("/addExerciseBranch")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addExercises(JsonObject freshNode){
-        String rootType = freshNode.get("root").toString().replace("\"", "");
-        System.out.println(rootType);
-        switch (rootType){
+    public Response addExercises(JsonObject freshNode) {
+        String nodeType = freshNode.get("nodeType").toString().replace("\"", "");
+        System.out.println(nodeType);
+        if(nodeType.equals("root")){
+            Document branch  = new Document();
+            branch.append("branchName", freshNode.get("branchName").toString().replace("\"", ""));
+            branch.append("childrenType", freshNode.get("childrenType").toString().replace("\"", ""));
+            branch.append("children", new ArrayList<ObjectId>());
+            branch.append("nodeType", "root");
+            tree.insertOne(branch);
 
-            case "Bodyweight" :{
-                //Grab just the id number
-                String parentValue = freshNode.get("parentNode").toString().subSequence(10, 34).toString();
-                ObjectId parentId = new ObjectId(parentValue);
-                Document oldParentNode = new Document();
-                oldParentNode.append("_id", parentId);
-                FindIterable<Document> parentFound = bWc.find(oldParentNode);
-                Document parentNode = parentFound.cursor().next();
+        } else {
+            //Grab just the id number
+            ObjectId parentId = new ObjectId(freshNode.get("parentNode").toString().subSequence(10, 34).toString());
+            Document oldParentNode = new Document();
+            oldParentNode.append("_id", parentId);
+            FindIterable<Document> parentFound = tree.find(oldParentNode);
+            Document parentNode = parentFound.cursor().next();
+
+            if(parentNode.getList("children", Object.class).isEmpty()){
+                Document freshBranch = new Document();
+                freshBranch.append("branchName", freshNode.get("branchName").toString().replace("\"", ""));
+                freshBranch.append("childrenType", freshNode.get("childrenType").toString().replace("\"", ""));
+                freshBranch.append("children", new ArrayList<ObjectId>());
+                freshBranch.append("nodeType", freshNode.get("nodeType").toString().replace("\"", ""));
+                tree.insertOne(freshBranch);
+                FindIterable<Document> yanked = tree.find(freshBranch);
+                String freshBranchID = yanked.cursor().next().get("_id").toString();
+                ObjectId branchId = new ObjectId(freshBranchID);
+                ArrayList<ObjectId> freshObjectIdList = new ArrayList<>();
+                freshObjectIdList.add(branchId);
+                System.out.println(freshObjectIdList);
+                parentNode.replace("children", freshObjectIdList);
+                tree.findOneAndReplace(oldParentNode, parentNode);
+            } else {
                 List<ObjectId> childrenBranches = parentNode.getList("children", ObjectId.class);
+                System.out.println(childrenBranches.toString());
                 //create fresh document for new branch
                 Document freshBranch = new Document();
                 freshBranch.append("branchName", freshNode.get("branchName").toString().replace("\"", ""));
-                freshBranch.append("type",  "branch");
+                freshBranch.append("childrenType", freshNode.get("childrenType").toString().replace("\"", ""));
                 freshBranch.append("children", new ArrayList<ObjectId>());
-                bWc.insertOne(freshBranch);
-                FindIterable<Document> yanked = bWc.find(freshBranch);
+                freshBranch.append("nodeType", freshNode.get("nodeType").toString().replace("\"", ""));
+                tree.insertOne(freshBranch);
+                FindIterable<Document> yanked = tree.find(freshBranch);
                 String freshBranchID = yanked.cursor().next().get("_id").toString();
                 System.out.println(freshBranchID);
                 ObjectId fBchildren = new ObjectId(freshBranchID);
                 childrenBranches.add(fBchildren);
-                parentNode.replace("childern", fBchildren);
-                bWc.findOneAndReplace(oldParentNode, parentNode);
-                return Response.ok().build();
-            }
-            //case "plyometrics" :{
-
-            //}
-
-            default:{
-                return Response.serverError().build();
+                parentNode.replace("children", childrenBranches);
+                tree.findOneAndReplace(oldParentNode, parentNode);
             }
         }
-    }
+         return Response.ok().build();
+     }
 
-    //Body weight collection API
-    @Path("/plyometrics/all")
+    //Retrieves all the root level starting nodes
+    @Path("/allRoots")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response allBodyWeightBranches(){
         //Variable decelerations
         ArrayList<String> toplevel = new ArrayList<>();
-
-        FindIterable<Document> document = bWc.find();
+        Document roots = new Document("nodeType", "root");
+        FindIterable<Document> document = tree.find(roots);
         //Iterate through each db hit and amend it to an array list
         for (Document doc: document){
             toplevel.add(doc.toJson());
@@ -145,6 +140,27 @@ public class PrimusFitnessExercisesAPI {
         return Response.ok(toplevel.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    //@Path("/plyometrics/")
-
+    //Tree travresal
+    @Path("/descending/{id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response descending(@PathParam("id") String stringId){
+        //Variable decelerations
+        ArrayList<String> childrenDocs = new ArrayList<>();
+        ObjectId id = new ObjectId(stringId);
+        Document branchId = new Document("_id", id);
+        FindIterable<Document> document = tree.find(branchId);
+        //Iterate through each db hit and amend it to an array list
+        Document parentFound = document.cursor().next();
+        List<ObjectId> children = parentFound.getList("children", ObjectId.class);
+        Document tempDoc = new Document();
+        for (ObjectId s: children) {
+            tempDoc.append("_id", s);
+            FindIterable<Document> test = tree.find(tempDoc);
+            tempDoc = test.cursor().next();
+            childrenDocs.add(tempDoc.toJson());
+        }
+        //Return response in the for of a string
+        return Response.ok(childrenDocs.toString(), MediaType.APPLICATION_JSON).build();
+    }
 }

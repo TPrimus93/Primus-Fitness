@@ -6,24 +6,28 @@ import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text, ScrollView } fr
 import Navbar from '../Components/Navbar';
 import BranchButton from '../Components/BranchButton';
 
-function HomeScreen({ route, navigation }) {
+function HomeScreen({ route, navigation, }) {
 
-
-    const [branches, setBranches] = useState(route.params.branches);
+    // useEffect(() => {
+    //     console.log(branches);
+    // }, [branches]);
 
     function consolelog() {
-        console.log(branches);
+        // setBranches(route.params.branches);
         console.log(route.params);
     }
+
+
 
     return (
 
         <SafeAreaView style={styles.container} >
-            {consolelog()}
+
+            {/* {consolelog()} */}
             <Navbar />
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    {branches.map((branch) => <BranchButton key={branch._id.$oid} title={branch.branchName} press={route.params.myJwt} />)}
+                    {route.params.branches.map((branch) => <BranchButton key={branch._id.$oid} title={branch.branchName} bID={branch._id.$oid} jwt={route.params.myJwt} uname={route.params.user} utype={route.params.usertype} ctype={branch.childrenType} workout={route.params.workout} />)}
                 </ScrollView>
             </View>
         </SafeAreaView>
@@ -61,7 +65,7 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     },
     buttonMenu: {
-        top: 120,
+        marginTop: '10%',
         marginBottom: 100,
     }
 });

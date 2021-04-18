@@ -5,20 +5,26 @@ import axios from 'axios';
 import ExerciseButton from '../Components/ExerciseButton';
 
 
-function ExerciseScreen() {
 
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+function ExerciseScreen({ route, navigation }) {
+
+
+    function consolelog() {
+        console.log(route.params);
+        console.log(route.params.workout);
+    }
     return (
         <SafeAreaView style={styles.container}>
+            {consolelog()}
             <Navbar />
+            {/* <View>
+                <TouchableOpacity>
+                    <Text> Branch</Text>
+                </TouchableOpacity>
+            </View> */}
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    <ExerciseButton />
-                    <ExerciseButton />
-                    <TouchableOpacity style={styles.centerButton} >
-                        <Text style={styles.buttonText}>Plyometrics</Text>
-                    </TouchableOpacity>
+                    {route.params.exercises.map((exercise) => <ExerciseButton key={exercise._id.$oid} title={exercise.name} jwt={route.params.myJwt} workoutList={route.params.workout} exerciseID={exercise._id.$oid} exercises={route.params.exercises} uname={route.params.user} uType={route.params.usertype} />)}
                 </ScrollView>
             </View>
         </SafeAreaView>

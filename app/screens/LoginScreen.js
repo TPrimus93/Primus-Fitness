@@ -9,15 +9,22 @@ function LoginScreen({ navigation }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [workoutList, setWorkoutList] = useState('testlist');
 
     function login() {
+        setWorkout();
         axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
-            .then(response => componentDidMount(response.data)).catch(e => console.log(e));
+            .then(response => loggedIn(response.data.substring(1, response.data.indexOf(',')),
+                response.data.substring(response.data.indexOf(' ') + 1, response.data.indexOf(']')))).catch(e => console.log(e));
     }
 
-    function componentDidMount(myjwt) {
-        axios.get('http://68.172.33.6:9083/exercises/allRoots')
-            .then(response => navigation.navigate('Home', { myJwt: myjwt, user: username, branches: response.data, })).catch(e => console.log(e));
+    function loggedIn(myjwt, userType) {
+        axios.get('http://68.172.33.6:9083/exercises/allRoots', { headers: { "Authorization": `Bearer ${myjwt}` } })
+            .then(response => navigation.navigate('Home', { myJwt: myjwt, usertype: userType, user: username, branches: response.data, workout: workoutList, })).catch(e => console.log(e));
+    }
+
+    function setWorkout() {
+        setWorkoutList('testlist');
     }
 
     return (
@@ -105,3 +112,4 @@ export default LoginScreen;
 // () => axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
 //                     .then(response => setjwt(response.data)).catch(e => console.log(e))
 //                     .then(console.log(jwt)).then(() => navigation.navigate('Home', props = { jwt }))
+// componentDidMount(response.data)

@@ -1,11 +1,27 @@
-
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 
-function BranchButton({ title, press }) {
+function BranchButton({ title, bID, jwt, uname, utype, ctype, workout }) {
+    const navigation = useNavigation();
+
+
+    function getBranches(myjwt, userType, username, branchID, childrenType) {
+        console.log(childrenType);
+        if (childrenType == 'branch') {
+            console.log("here");
+            axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${myjwt}` } })
+                .then(response => navigation.navigate('Home', { myJwt: myjwt, usertype: userType, user: username, branches: response.data, workout: workout, })).catch(e => console.log(e));
+        } else {
+            axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${myjwt}` } })
+                .then(response => navigation.navigate('Exercise', { myJwt: myjwt, usertype: userType, user: username, exercises: response.data, workout: workout, })).catch(e => console.log(e));
+        }
+    }
+
     return (
         <View style={styles.setContainer}>
-            <TouchableOpacity style={styles.centerButton} onPress={() => console.log(press)}>
+            <TouchableOpacity style={styles.centerButton} onPress={() => getBranches(jwt, utype, uname, bID, ctype)}>
                 <Text style={styles.buttonText}>{title}</Text>
             </TouchableOpacity>
         </View>

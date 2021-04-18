@@ -7,20 +7,46 @@ import NextWorkoutButton from '../Components/NextWorkoutButton';
 import CurrentSetButton from '../Components/CurrentSetButton';
 import NextSetButton from '../Components/NextSetButton';
 import AddSetButton from '../Components/AddSetButton';
+import { set } from 'react-native-reanimated';
 
 
 
 function WorkoutScreen() {
+    const [numberNotes, setNumberNotes] = useState(1);
     const [notes, setNotes] = useState("");
     const [note, setNote] = useState("");
-    const [weight, setWeight] = useState("100");
-    const [reps, setReps] = useState('10');
+    const [weight, setWeight] = useState(10);
+    const [reps, setReps] = useState(10);
+    const [sets, setSets] = useState(3);
 
     function addNote(noteInput) {
-        (noteInput) => setNotes(noteInput);
-        alert()
+        if (noteInput != '') {
+            setNotes(notes + 'Note ' + numberNotes + ':' + noteInput + '\n');
+            setNote('');
+            setNumberNotes(numberNotes + 1);
+        }
     };
 
+    function setRep(direction) {
+        if (direction == 'up') {
+            setReps(reps + 1);
+        } else if (direction == 'down' && reps > 0) {
+            setReps(reps - 1);
+        }
+    };
+
+    function setWeights(direction) {
+        if (direction == 'up') {
+            setWeight(weight + 2.5);
+        } else if (direction == 'down' && weight > 0) {
+            setWeight(weight - 2.5);
+        }
+    };
+
+
+    function setsMenu() {
+
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -49,31 +75,21 @@ function WorkoutScreen() {
             <View style={styles.repWeightContainer}>
                 <View style={styles.repsContainer}>
                     <Text style={styles.repsText}>Reps</Text>
-                    <TouchableOpacity style={styles.upArrow} >
+                    <TouchableOpacity style={styles.upArrow} onPress={() => setRep('up')}>
                         <Image source={require('../assets/UpArrow.png')} />
                     </TouchableOpacity>
-                    <TextInput
-                        style={styles.weightButtonText}
-                        textAlign='center'
-                        value={reps}
-                        onChangeText={(reps) => setReps(reps)}
-                    />
-                    <TouchableOpacity style={styles.downArrow} >
+                    <Text style={styles.weightButtonText}>{reps}</Text>
+                    <TouchableOpacity style={styles.downArrow} onPress={() => setRep('down')}>
                         <Image source={require('../assets/DownArrow.png')} />
                     </TouchableOpacity>
                 </View>
                 <View style={styles.weightContainer}>
                     <Text style={styles.repsText}>Weight</Text>
-                    <TouchableOpacity style={styles.upArrow} >
+                    <TouchableOpacity style={styles.upArrow} onPress={() => setWeights('up')}>
                         <Image source={require('../assets/UpArrow.png')} />
                     </TouchableOpacity>
-                    <TextInput
-                        style={styles.weightButtonText}
-                        textAlign='center'
-                        value={weight}
-                        onChangeText={(weight) => setNote(weight)}
-                    />
-                    <TouchableOpacity style={styles.downArrow} >
+                    <Text style={styles.weightButtonText}>{weight}</Text>
+                    <TouchableOpacity style={styles.downArrow} onPress={() => setWeights('down')}>
                         <Image source={require('../assets/DownArrow.png')} />
                     </TouchableOpacity>
                 </View>
@@ -84,6 +100,7 @@ function WorkoutScreen() {
                     placeholder="Notes.."
                     textAlign='left'
                     onChangeText={(note) => setNote(note)}
+                    value={note}
                 />
                 <TouchableOpacity style={styles.setButtonAdd} onPress={() => addNote(note)}>
                     <Text style={styles.buttonAddText}>+</Text>
@@ -137,9 +154,9 @@ const styles = StyleSheet.create({
         width: '100%'
     },
     notesInputView: {
+        bottom: 0,
         marginLeft: '5%',
-        marginTop: '5%',
-        height: 250,
+        height: 240,
         width: '90%',
         borderWidth: 2,
         borderColor: "#707070",
@@ -150,7 +167,8 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         padding: 20,
         textAlign: 'left',
-
+        position: 'absolute',
+        justifyContent: 'flex-end'
     },
     notesInputText: {
         height: 50,
@@ -167,8 +185,10 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         borderWidth: 1,
         borderColor: "#707070",
-        fontSize: 25,
-        fontWeight: 'bold'
+        fontSize: 30,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        justifyContent: 'center'
     },
     weightText: {
         fontSize: 25,

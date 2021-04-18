@@ -1,13 +1,39 @@
 import React, { useState } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-function ExerciseButton() {
+function ExerciseButton({ title, myjwt, uname, uType, exerciseID, workoutList, exercises }) {
+
+    const navigation = useNavigation();
+    const [addRemove, setAddRemove] = useState(false);
+    const [addRemoveButton, setAddRemoveButton] = useState(<Image source={require('../assets/PlusIcon.png')} />);
+    const [worklist, setworklist] = useState(workoutList);
+
+    // function getExercises() {
+    //     axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${myjwt}` } })
+    //         .then(response => navigation.navigate('Home', { myJwt: myjwt, usertype: userType, user: username, branches: response.data, })).catch(e => console.log(e));
+    // }
+
+    function addExercise(eID) {
+        if (addRemove == false) {
+            setworklist(worklist + eID + ",\n");
+            console.log(this.state);
+            setAddRemove(true);
+            setAddRemoveButton(<Image source={require('../assets/MinusIcon.png')} />);
+            navigation.navigate('Exercise', { myJwt: myjwt, usertype: uType, user: uname, exercises: exercises, workout: worklist, })
+        } else {
+            console.log(workoutList.substring(eID));
+            setAddRemove(false);
+            setAddRemoveButton(<Image source={require('../assets/PlusIcon.png')} />);
+        }
+    }
+
     return (
         <View style={styles.centerButton} >
-            <TouchableOpacity style={styles.plusButton}>
-                <Image source={require('../assets/PlusIcon.png')} />
+            <TouchableOpacity style={styles.plusButton} onPress={() => addExercise(exerciseID)}>
+                {addRemoveButton}
             </TouchableOpacity>
-            <Text style={styles.buttonText}>Push-ups</Text>
+            <Text style={styles.buttonText}>{title}</Text>
             <Image style={styles.exerciseIcon} source={require('../assets/PushUpsIcon.png')} />
             <TouchableOpacity style={styles.rightArrow}>
                 <Image source={require('../assets/RightArrowIcon.png')} />
@@ -25,15 +51,16 @@ const styles = StyleSheet.create({
         marginTop: 10,
         alignSelf: 'stretch',
         flexDirection: 'row',
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
+        borderRadius: 7
     },
     buttonText: {
-        marginTop: 5,
-        fontSize: 35,
-        marginRight: "20%",
+        fontSize: 30,
+        // marginRight: "20%",
         color: '#E51B23',
         fontWeight: "bold",
-        textAlign: 'left'
+        textAlign: 'left',
+        alignSelf: 'center'
     },
     buttonMenu: {
         top: 120,
@@ -43,13 +70,19 @@ const styles = StyleSheet.create({
     plusButton: {
         marginRight: 15,
         marginLeft: 15,
-        marginTop: 25,
 
+        alignSelf: 'center'
     },
     rightArrow: {
-        marginTop: 25,
+        position: 'absolute',
+        right: '1%',
+        alignSelf: 'center',
         marginRight: 10,
         marginLeft: 25
+    },
+    exerciseIcon: {
+        position: 'absolute',
+        right: '8%'
     },
 
 });

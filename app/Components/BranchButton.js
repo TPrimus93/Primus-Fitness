@@ -1,27 +1,29 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import { UserContext } from '../Components/UserContext';
 
-function BranchButton({ title, bID, jwt, uname, utype, ctype, workout }) {
+function BranchButton({ title, bID, ctype }) {
     const navigation = useNavigation();
+    const { contextObject, setContextObject } = useContext(UserContext);
 
 
-    function getBranches(myjwt, userType, username, branchID, childrenType) {
+    function getBranches(branchID, childrenType) {
         console.log(childrenType);
         if (childrenType == 'branch') {
-            console.log("here");
-            axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${myjwt}` } })
-                .then(response => navigation.navigate('Home', { myJwt: myjwt, usertype: userType, user: username, branches: response.data, workout: workout, })).catch(e => console.log(e));
+            console.log(contextObject);
+            axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
+                .then(response => navigation.navigate('Home', { branches: response.data, })).catch(e => console.log(e));
         } else {
-            axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${myjwt}` } })
-                .then(response => navigation.navigate('Exercise', { myJwt: myjwt, usertype: userType, user: username, exercises: response.data, workout: workout, })).catch(e => console.log(e));
+            axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
+                .then(response => navigation.navigate('Exercise', { exercises: response.data, })).catch(e => console.log(e));
         }
     }
 
     return (
         <View style={styles.setContainer}>
-            <TouchableOpacity style={styles.centerButton} onPress={() => getBranches(jwt, utype, uname, bID, ctype)}>
+            <TouchableOpacity style={styles.centerButton} onPress={() => getBranches(bID, ctype)}>
                 <Text style={styles.buttonText}>{title}</Text>
             </TouchableOpacity>
         </View>

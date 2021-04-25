@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View, TextInput } from 'react-native';
 import axios from 'axios';
 
+import { UserContext } from '../Components/UserContext';
 
 
 
@@ -9,22 +10,20 @@ function LoginScreen({ navigation }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [workoutList, setWorkoutList] = useState('testlist');
+    const { contextObject, setContextObject } = useContext(UserContext);
 
     function login() {
-        setWorkout();
         axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
             .then(response => loggedIn(response.data.substring(1, response.data.indexOf(',')),
                 response.data.substring(response.data.indexOf(' ') + 1, response.data.indexOf(']')))).catch(e => console.log(e));
     }
 
     function loggedIn(myjwt, userType) {
+        contextObject.username = username;
+        contextObject.userType = userType;
+        contextObject.jwt = myjwt;
         axios.get('http://68.172.33.6:9083/exercises/allRoots', { headers: { "Authorization": `Bearer ${myjwt}` } })
-            .then(response => navigation.navigate('Home', { myJwt: myjwt, usertype: userType, user: username, branches: response.data, workout: workoutList, })).catch(e => console.log(e));
-    }
-
-    function setWorkout() {
-        setWorkoutList('testlist');
+            .then(response => navigation.navigate('Home', { branches: response.data, })).catch(e => console.log(e));
     }
 
     return (
@@ -59,10 +58,9 @@ function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'black',
+        backgroundColor: '#2D2D2D',
         justifyContent: 'flex-end',
-        alignItems: 'center',
-        opacity: 0.8
+        alignItems: 'center'
     },
     loginButton: {
         width: "75%",

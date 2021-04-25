@@ -6,7 +6,7 @@ import ExerciseButton from '../Components/ExerciseButton';
 import { UserContext } from '../Components/UserContext';
 
 
-function ExerciseScreen({ route, navigation }) {
+function StartWorkoutScreen({ route, navigation }) {
     const { contextObject, setContextObject } = useContext(UserContext);
 
     function consolelog() {
@@ -18,7 +18,7 @@ function ExerciseScreen({ route, navigation }) {
             <Navbar />
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    {route.params.exercises.map((exercise) => <ExerciseButton key={exercise._id.$oid} title={exercise.name} exerciseID={exercise._id.$oid} index={contextObject.workoutList.findIndex(x => x.exerciseID === exercise._id.$oid)} />)}
+                    {route.params.exercises.map((exercise) => <ExerciseButton key={exercise._id.$oid} title={exercise.name} exerciseID={exercise._id.$oid} workoutIndex={contextObject.workoutList.indexOf(exercise._id.$oid)} />)}
                 </ScrollView>
             </View>
         </SafeAreaView>
@@ -74,4 +74,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default ExerciseScreen;
+export default StartWorkoutScreen;

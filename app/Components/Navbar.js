@@ -1,13 +1,17 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useContext } from 'react';
+import axios from 'axios';
 import { View, Image, StyleSheet, TouchableOpacity, Text, SafeAreaView, Platform, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
+import { UserContext } from '../Components/UserContext';
 const statusBarHeight = Constants.statusBarHeight;
 var menuHeight = 50;
+
 
 function Navbar({ }) {
     const navigation = useNavigation();
     const [menu, setMenu] = useState(false);
+    const { contextObject, setContextObject } = useContext(UserContext);
 
     const testRef = useRef();
 
@@ -16,19 +20,32 @@ function Navbar({ }) {
         // testRef.current.focus();
     }
 
+    function goHome() {
+        axios.get('http://68.172.33.6:9083/exercises/allRoots', { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
+            .then(response => navigation.navigate('Home', { branches: response.data, })).catch(e => console.log(e));
+    }
+    function goToHistory() {
+        axios.get('http://68.172.33.6:9082/workouts/getWorkoutsByUser/' + contextObject.username, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
+            .then(response => navigation.navigate('PastYearWorkouts', { dates: response.data, })).catch(e => console.log(e));
+    }
+    function goToWorkout() {
+        navigation.navigate('Exercise', { exercises: response.data, })
+    }
+
+
     function settingsMenu() {
         if (menu == true) {
 
             return (
-                <View style={styles.menuView} tabIndex='0'>
+                <View style={styles.menuView}>
                     <TouchableOpacity style={styles.menuButton} >
                         <Text style={styles.menuButtonText}>ACCOUNT</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.menuButton}>
+                    <TouchableOpacity style={styles.menuButton} onPress={() => goToHistory()}>
                         <Text style={styles.menuButtonText}>HISTORY</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.menuButton}>
-                        <Text style={styles.menuButtonText}>SETTINGS</Text>
+                    <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('Login')}>
+                        <Text style={styles.menuButtonText}>LOGOUT</Text>
                     </TouchableOpacity>
                 </View>
             );
@@ -39,8 +56,8 @@ function Navbar({ }) {
 
     return (
         <View style={styles.navbarView}>
-            <Image style={styles.logo} opacity={0.8} source={require('../assets/Primus_Fitness_Logo.png')} />
-            <TouchableOpacity style={styles.home} nPress={() => navigation.navigate('Home')}>
+            <Image style={styles.logo} source={require('../assets/Primus_Fitness_Logo.png')} />
+            <TouchableOpacity style={styles.home} onPress={() => goHome()}>
                 <Image source={require('../assets/HomeIcon.png')} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.barbell} onPress={() => navigation.navigate('Login')}>
@@ -95,13 +112,12 @@ const styles = StyleSheet.create({
         borderRadius: 2,
         marginBottom: 5,
         backgroundColor: '#E51B23',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     menuButtonText: {
         fontSize: 15,
         fontWeight: 'bold',
         color: 'white',
-
     },
     home: {
         position: 'absolute',

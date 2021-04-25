@@ -1,33 +1,27 @@
 
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text, ScrollView } from "react-native";
 
 import Navbar from '../Components/Navbar';
 import BranchButton from '../Components/BranchButton';
+import { UserContext } from '../Components/UserContext';
 
 function HomeScreen({ route, navigation, }) {
 
-    // useEffect(() => {
-    //     console.log(branches);
-    // }, [branches]);
-
     function consolelog() {
-        // setBranches(route.params.branches);
-        console.log(route.params);
-    }
 
+        console.log(route.params);
+    };
 
 
     return (
-
         <SafeAreaView style={styles.container} >
-
-            {/* {consolelog()} */}
+            {consolelog()}
             <Navbar />
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    {route.params.branches.map((branch) => <BranchButton key={branch._id.$oid} title={branch.branchName} bID={branch._id.$oid} jwt={route.params.myJwt} uname={route.params.user} utype={route.params.usertype} ctype={branch.childrenType} workout={route.params.workout} />)}
+                    {route.params.branches.map((branch) => <BranchButton key={branch._id.$oid} title={branch.branchName} bID={branch._id.$oid} ctype={branch.childrenType} />)}
                 </ScrollView>
             </View>
         </SafeAreaView>
@@ -37,8 +31,7 @@ function HomeScreen({ route, navigation, }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        opacity: 0.8,
-        backgroundColor: 'black',
+        backgroundColor: '#2D2D2D',
     },
     scrollContainer: {
         alignItems: 'center'

@@ -13,7 +13,6 @@ function CreateUserScreen() {
     const [password, setPassword] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
-    const [birthday, setBirthday] = useState("");
     const [isTrainer, setIsTrainer] = useState(false);
     const [trainButton, setTrainButton] = useState(<Image source={require('../assets/CheckBoxEmpty.png')} />);
 
@@ -51,7 +50,7 @@ function CreateUserScreen() {
         <SafeAreaView style={styles.container}>
             <Navbar />
             <View style={styles.inputFields}>
-                <Text style={styles.birthdayText}>First Name</Text>
+                <Text style={styles.titleText}>First Name</Text>
                 <View style={styles.inputView} >
                     <TextInput
                         style={styles.inputText}
@@ -60,7 +59,7 @@ function CreateUserScreen() {
                         onChangeText={(firstName) => setFirstName(firstName)}
                     />
                 </View>
-                <Text style={styles.birthdayText}>Last Name</Text>
+                <Text style={styles.titleText}>Last Name</Text>
                 <View style={styles.inputView} >
                     <TextInput
                         style={styles.inputText}
@@ -69,7 +68,7 @@ function CreateUserScreen() {
                         onChangeText={(lastName) => setLastName(lastName)}
                     />
                 </View>
-                <Text style={styles.birthdayText}>Username</Text>
+                <Text style={styles.titleText}>Username</Text>
                 <View style={styles.inputView} >
                     <TextInput
                         style={styles.inputText}
@@ -78,7 +77,7 @@ function CreateUserScreen() {
                         onChangeText={(username) => setUsername(username)}
                     />
                 </View>
-                <Text style={styles.birthdayText}>Password</Text>
+                <Text style={styles.titleText}>Password</Text>
                 <View style={styles.inputView} >
                     <TextInput
                         style={styles.inputText}
@@ -88,7 +87,7 @@ function CreateUserScreen() {
                     />
                 </View>
                 <View style={styles.dateButtonView}>
-                    <Text style={styles.birthdayText}>Birthday</Text>
+                    <Text style={styles.titleText}>Birthday</Text>
                     <TouchableOpacity style={styles.dateButton} onPress={showDatepicker} >
                         <Text style={styles.dateButtonText}>{date.toString().substring(0, 11)}</Text>
                     </TouchableOpacity>
@@ -124,8 +123,7 @@ function CreateUserScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        opacity: 0.8,
-        backgroundColor: 'black',
+        backgroundColor: '#2D2D2D',
     },
     inputText: {
         height: 50,
@@ -162,7 +160,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
 
     },
-    birthdayText: {
+    titleText: {
         fontSize: 15,
         color: '#E51B23',
         fontWeight: "bold",

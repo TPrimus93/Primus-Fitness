@@ -22,13 +22,13 @@ const styles = StyleSheet.create({
         borderColor: "#707070",
         borderWidth: 1,
         alignContent: 'center',
+        justifyContent: 'center',
         marginBottom: 10,
         marginTop: 10,
         marginLeft: 10,
         marginRight: 10
     },
     buttonAddText: {
-        marginTop: 3.5,
         fontSize: 18,
         color: 'black',
         fontWeight: "bold",

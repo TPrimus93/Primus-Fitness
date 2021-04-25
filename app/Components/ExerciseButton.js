@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { UserContext } from '../Components/UserContext';
 
-function ExerciseButton({ title, myjwt, uname, uType, exerciseID, workoutList, exercises }) {
+function ExerciseButton({ title, exerciseID, index }) {
 
+    // var xy = contextObject.workoutList.findIndex(y => y.exerciseID === eID);
+    var x = <Image source={require('../assets/PlusIcon.png')} />
+    if (index > -1) {
+        x = <Image source={require('../assets/MinusIcon.png')} />
+    }
     const navigation = useNavigation();
     const [addRemove, setAddRemove] = useState(false);
-    const [addRemoveButton, setAddRemoveButton] = useState(<Image source={require('../assets/PlusIcon.png')} />);
-    const [worklist, setworklist] = useState(workoutList);
+    const [addRemoveButton, setAddRemoveButton] = useState(x);
+    const { contextObject, setContextObject } = useContext(UserContext);
 
     // function getExercises() {
     //     axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${myjwt}` } })
@@ -15,14 +21,17 @@ function ExerciseButton({ title, myjwt, uname, uType, exerciseID, workoutList, e
     // }
 
     function addExercise(eID) {
-        if (addRemove == false) {
-            setworklist(worklist + eID + ",\n");
-            console.log(this.state);
+        if (addRemove == false && contextObject.workoutList.findIndex(y => y.exerciseID === eID)) {
+            contextObject.workoutList.push({ exerciseID: eID, title: title });
+            console.log(contextObject.workoutList);
             setAddRemove(true);
             setAddRemoveButton(<Image source={require('../assets/MinusIcon.png')} />);
-            navigation.navigate('Exercise', { myJwt: myjwt, usertype: uType, user: uname, exercises: exercises, workout: worklist, })
         } else {
-            console.log(workoutList.substring(eID));
+            var index = contextObject.workoutList.findIndex(y => y.exerciseID === eID);
+            if (index !== -1) {
+                contextObject.workoutList.splice(index, 1);
+            }
+            console.log(contextObject.workoutList);
             setAddRemove(false);
             setAddRemoveButton(<Image source={require('../assets/PlusIcon.png')} />);
         }
@@ -30,6 +39,9 @@ function ExerciseButton({ title, myjwt, uname, uType, exerciseID, workoutList, e
 
     return (
         <View style={styles.centerButton} >
+            {/* {console.log('Here ' + contextObject.workoutList.findIndex(x => x.exerciseID === exerciseID))}
+            {console.log('index ' + index)}
+            {console.log('eID ' + exerciseID)} */}
             <TouchableOpacity style={styles.plusButton} onPress={() => addExercise(exerciseID)}>
                 {addRemoveButton}
             </TouchableOpacity>

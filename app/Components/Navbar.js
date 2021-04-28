@@ -29,7 +29,7 @@ function Navbar({ }) {
             .then(response => navigation.navigate('PastYearWorkouts', { dates: response.data, })).catch(e => console.log(e));
     }
     function goToWorkout() {
-        navigation.navigate('Exercise', { exercises: response.data, })
+        navigation.navigate('StartWorkout')
     }
 
 
@@ -60,7 +60,7 @@ function Navbar({ }) {
             <TouchableOpacity style={styles.home} onPress={() => goHome()}>
                 <Image source={require('../assets/HomeIcon.png')} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.barbell} onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity style={styles.barbell} onPress={() => goToWorkout()}>
                 <Image source={require('../assets/metro-barbell.png')} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.featherMenu} onPress={() => focus()} >

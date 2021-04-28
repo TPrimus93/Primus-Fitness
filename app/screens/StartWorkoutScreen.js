@@ -12,14 +12,22 @@ function StartWorkoutScreen({ route, navigation }) {
     function consolelog() {
         console.log('exercises');
     }
+
+    function startWorkout() {
+        navigation.navigate('Workout');
+    };
     return (
         <SafeAreaView style={styles.container}>
             {consolelog()}
             <Navbar />
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    {route.params.exercises.map((exercise) => <ExerciseButton key={exercise._id.$oid} title={exercise.name} exerciseID={exercise._id.$oid} workoutIndex={contextObject.workoutList.indexOf(exercise._id.$oid)} />)}
+                    {contextObject.workoutList.map((exercise) => <ExerciseButton key={exercise.exerciseID} title={exercise.title} exerciseID={exercise.exerciseID} workoutIndex={contextObject.workoutList.indexOf(exercise.exerciseID)} />)}
                 </ScrollView>
+                <TouchableOpacity style={styles.loginButton}
+                    onPress={() => startWorkout()}>
+                    <Text style={styles.buttonText}>Login</Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
@@ -44,33 +52,29 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-start'
     },
-    buttonText: {
-        marginTop: 5,
-        fontSize: 35,
-        marginRight: "20%",
-        color: '#E51B23',
-        fontWeight: "bold",
-        textAlign: 'left'
-    },
     buttonMenu: {
         top: 120,
         marginBottom: 100,
         width: '99%'
     },
-    plusButton: {
-        marginRight: 15,
-        marginLeft: 15,
-        marginTop: 25,
-
+    loginButton: {
+        width: "75%",
+        height: 75,
+        borderRadius: 45,
+        borderColor: "#707070",
+        borderWidth: 2,
+        backgroundColor: "#222222",
+        marginBottom: 50,
+        marginTop: 50,
+        elevation: 8,
+        justifyContent: "center",
     },
-    rightArrow: {
-        marginTop: 25,
-        marginRight: 10,
-        marginLeft: 25
+    buttonText: {
+        fontSize: 35,
+        color: '#E51B23',
+        fontWeight: "bold",
+        alignSelf: "center",
     },
-    exerciseIcon: {
-
-    }
 
 });
 

@@ -15,6 +15,7 @@ import PastMonthWorkoutsScreen from './app/screens/PastMonthWorkoutsScreen';
 import PastYearWorkoutsScreen from './app/screens/PastYearWorkoutsScreen';
 import SettingsScreen from './app/screens/SettingsScreen';
 import AddBranchScreen from './app/screens/AddBranchScreen';
+import StartWorkoutScreen from './app/screens/StartWorkoutScreen';
 
 
 
@@ -31,8 +32,8 @@ export default function App() {
     jwt: '',
     userType: '',
     workout: [],
-    workoutPos: 0,
-    setPos: 0
+    workoutPosition: 0,
+    setPosition: 0
   });
 
   const contextValue = useMemo(() => ({
@@ -47,6 +48,7 @@ export default function App() {
           <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Exercise" component={ExerciseScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="StartWorkout" component={StartWorkoutScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Workout" component={WorkoutScreen} options={{ headerShown: false }} />
           <Stack.Screen name="CreateUser" component={CreateUserScreen} options={{ headerShown: false }} />
           <Stack.Screen name="CreateBranch" component={AddBranchScreen} options={{ headerShown: false }} />

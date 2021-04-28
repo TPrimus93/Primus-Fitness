@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 
 
 
-function SetButton({ setIndex, buttonType, setArray, workoutPos, setPos }) {
+function SetButton({ setIndex, buttonType, setArray, workoutPos, setPos, weight, reps }) {
 
     const navigation = useNavigation();
 
@@ -15,7 +15,7 @@ function SetButton({ setIndex, buttonType, setArray, workoutPos, setPos }) {
         //console.log(setArray);
         return (
             <View style={styles.setContainer}>
-                <TouchableOpacity style={styles.setButtonDark} onPress={() => navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos })}>
+                <TouchableOpacity style={styles.setButtonDark} onPress={() => finishedSetClick()}>
                     <Text style={styles.buttonLightText} >{setText}</Text>
                 </TouchableOpacity>
                 <Image source={require('../assets/CheckIcon.png')} />
@@ -29,7 +29,7 @@ function SetButton({ setIndex, buttonType, setArray, workoutPos, setPos }) {
         //console.log(setArray);
         return (
             <View style={styles.setContainer}>
-                <TouchableOpacity style={styles.setButtonDark} onPress={() => navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos })}>
+                <TouchableOpacity style={styles.setButtonDark} onPress={() => currentSetClick()}>
                     <Text style={styles.buttonLightText} >{setText}</Text>
                 </TouchableOpacity>
                 <Image source={require('../assets/EllipseFilled.png')} />
@@ -50,18 +50,23 @@ function SetButton({ setIndex, buttonType, setArray, workoutPos, setPos }) {
     }
 
     function nextSetClick() {
+        console.log(setPos);
         setPos = setArray.indexOf(3);
         setArray[setPos] = 2;
         setArray[setArray.indexOf(2)] = 1;
-        navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos });
+        navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos, weight: weight, reps: reps });
     }
 
     function currentSetClick() {
-
+        console.log(setPos);
+        setPos = setIndex;
+        navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos, weight: weight, reps: reps });
     }
 
     function finishedSetClick() {
-
+        console.log(setPos);
+        setPos = setIndex;
+        navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos, weight: weight, reps: reps });
     }
 
     function getSetButton() {

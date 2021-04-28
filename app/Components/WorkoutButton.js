@@ -3,20 +3,20 @@ import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 
-function WorkoutButton({ workoutPos, value, setArray, setPos }) {
+function WorkoutButton({ workoutPos, value, setArray, setPos, weight, reps }) {
 
     const navigation = useNavigation();
 
     function returnButton() {
         if (value == true) {
             return (
-                <TouchableOpacity style={styles.currentExerciseButton} onPress={() => navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos })}>
+                <TouchableOpacity style={styles.currentExerciseButton} onPress={() => navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos, weight: weight, reps: reps })}>
                     <Image style={styles.currentExerciseImage} source={require('../assets/DeadliftIcon.png')} />
                 </TouchableOpacity>
             );
         } else {
             return (
-                <TouchableOpacity style={styles.nextExerciseButton} onPress={() => navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos })}>
+                <TouchableOpacity style={styles.nextExerciseButton} onPress={() => navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos, weight: weight, reps: reps })}>
                     <Image style={styles.nextExerciseImage} source={require('../assets/DeadliftIcon.png')} />
                 </TouchableOpacity>
             );

@@ -1,7 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView } from 'react-native';
 import Navbar from '../Components/Navbar';
-import axios from 'axios';
 import ExerciseButton from '../Components/ExerciseButton';
 import { UserContext } from '../Components/UserContext';
 

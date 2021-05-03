@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Button, Image, Alert, Modal, Text, TextInput, View, StyleSheet, TouchableOpacity, TouchableHighlight, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import base64 from 'react-native-base64'
 
 
 
@@ -15,7 +16,7 @@ import axios from 'axios';
 function AddBranchScreen() {
 
 
-    var formData = new FormData();
+    var formData = JSON;
     const config = {
         headers: {
             'Content-Type': 'multipart/form-data',
@@ -37,47 +38,69 @@ function AddBranchScreen() {
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
-            aspect: [4, 3],
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: false,
             quality: 1,
+            base64: true,
         });
 
         //formData.append('photo', { uri: result.uri, name: 'test', type })
 
         console.log(result);
+        formData = result;
         //console.log(formData);
 
-        if (!result.cancelled) {
-            setImage(result.uri);
-            formdata.append('file', {
-                uri: Platform.OS === 'android' ? photo.uri : 'file://' + result.uri,
-                name: 'test',
-                type: 'image/jpeg' // or your mime type what you want
-            });
-            console.log(result.uri);
-            //formData.append('file', { uri: result.uri, name: 'test', type: 'image/jpeg' });
-            //console.log(formData.toString);
-        }
+        //if (!result.cancelled) {
+        //    setImage(result.uri);
+        //    formdata.append('file', {
+        //        uri: Platform.OS === 'android' ? photo.uri : 'file://' + result.uri,
+        //        name: 'test',
+        //        type: 'image/jpeg' // or your mime type what you want
+        //
+        //    });
+        //    console.log(result.uri);
+        //    //formData.append('file', { uri: result.uri, name: 'test', type: 'image/jpeg' });
+        //    //console.log(formData.toString);
+        //}
     };
 
     function testing() {
-        axios.post('http://68.172.33.6:9082/workouts/test', formData, config,).then((res) => {
-            console.log(res.data);
-            return res.data;
-        });
+        axios.post('http://68.172.33.6:9082/workouts/test', formData, ).then(err => console.log(err))
+    }
+
+    function getTesting(){
+        axios.get('http://68.172.33.6:9082/workouts/uploadImage')
+            .then(response => setTestImage(response.data)).catch(e => console.log(e));
+        setImageHere(true);
+        console.log("clicked")
+    }
+
+
+    function fun(){
+        if(!imageHere){
+            return (<Text style={styles.buttonText}>
+                Here
+            </Text>);
+
+        }else {
+            return (<View>
+                <Image source={{ uri: 'data:image/gif;base64,' + testImage }} style={{ width: 200, height: 200 }} />
+            </View>);
+        }
     }
 
     const [branchName, setBranchName] = useState('');
     const [description, setDescription] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const[imageHere, setImageHere] = useState(false);
+    const [testImage, setTestImage] = useState('empty');
 
 
 
     return (
         <View style={styles.container}>
             <Navbar />
-            <View style={styles.branchNameView}>
+            {/*<View style={styles.branchNameView}>
                 <TextInput
                     style={styles.branchNameText}
                     placeholder="Branch Name"
@@ -93,12 +116,15 @@ function AddBranchScreen() {
                     textAlign='center'
                     onChangeText={(description) => setDescription(description)}
                 />
-            </View>
+            </View>*/}
 
             <TouchableOpacity style={styles.testButton}
-                onPress={() => testing()}>
+                onPress={() => getTesting()}>
                 <Text style={styles.buttonText}>Test</Text>
             </TouchableOpacity>
+            <View style = {styles.imageContaner}>
+                {fun()}
+            </View>
 
             <Button title="Pick an image from camera roll" onPress={pickImage} />
             {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
@@ -234,6 +260,10 @@ const styles = StyleSheet.create({
     modalText: {
         marginBottom: 15,
         textAlign: 'center',
+    },
+    imageContaner:{
+        alignSelf: 'center',
+        marginTop: '5%',
     },
 
 });

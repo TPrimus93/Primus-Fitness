@@ -64,6 +64,7 @@ public class PrimusFitnessExercisesAPI {
     MongoCollection<Document> tree = database.getCollection("ExerciseTree");
 
     //Adds a branch node to any location based on the json input
+    //@RolesAllowed({"trainer"})
     @Path("/addExerciseBranch")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -89,6 +90,7 @@ public class PrimusFitnessExercisesAPI {
             if(parentNode.getList("children", Object.class).isEmpty()){
                 Document freshBranch = new Document();
                 freshBranch.append("branchName", freshNode.get("branchName").toString().replace("\"", ""));
+                parentNode.replace("childrenType", "branch");
                 freshBranch.append("childrenType", freshNode.get("childrenType").toString().replace("\"", ""));
                 freshBranch.append("children", new ArrayList<ObjectId>());
                 freshBranch.append("nodeType", freshNode.get("nodeType").toString().replace("\"", ""));
@@ -123,6 +125,42 @@ public class PrimusFitnessExercisesAPI {
          return Response.ok().build();
      }
 
+     //@RolesAllowed({"trainer"})
+     @Path("/addExercise")
+     @POST
+     @Produces(MediaType.APPLICATION_JSON)
+     public Response addExercise(JsonObject freshExercise){
+        Document foundParent = new Document("_id", new ObjectId(freshExercise.get("parentNode").toString().subSequence(10, 34).toString()));
+        Document freshDoc = new Document("name", freshExercise.get("name").toString().replace("\"", ""));
+        //freshDoc.append("gif", freshExercise.get("gif").toString().replace("\"", ""));
+        freshDoc.append("description", freshExercise.get("description").toString().replace("\"", ""));
+        FindIterable<Document> found = tree.find(foundParent);
+        Document freshParent = found.cursor().next();
+
+         if(freshParent.getList("children", Object.class).isEmpty()) {
+             tree.insertOne(freshDoc);
+             freshParent.replace("childrenType","workout");
+             FindIterable<Document> yanked = tree.find(freshDoc);
+             String freshExerciseID = yanked.cursor().next().get("_id").toString();
+             ObjectId exerciseId = new ObjectId(freshExerciseID);
+             ArrayList<ObjectId> freshObjectIdList = new ArrayList<>();
+             freshObjectIdList.add(exerciseId);
+             System.out.println(freshObjectIdList);
+             freshParent.replace("children", freshObjectIdList);
+             tree.findOneAndReplace(foundParent, freshParent);
+         }else {
+            List<ObjectId> siblings = freshParent.getList("children", ObjectId.class);
+            tree.insertOne(freshDoc);
+            FindIterable<Document> yanked = tree.find(freshDoc);
+            String freshBranchID = yanked.cursor().next().get("_id").toString();
+            ObjectId foundSiblings = new ObjectId(freshBranchID);
+            siblings.add(foundSiblings);
+            freshParent.replace("children", siblings);
+            tree.findOneAndReplace(foundParent, freshParent);
+         }
+        return Response.ok().build();
+     }
+
     //Retrieves all the root level starting nodes
     @Path("/allRoots")
     @GET
@@ -150,17 +188,22 @@ public class PrimusFitnessExercisesAPI {
         ObjectId id = new ObjectId(stringId);
         Document branchId = new Document("_id", id);
         FindIterable<Document> document = tree.find(branchId);
+        System.out.println(stringId);
         //Iterate through each db hit and amend it to an array list
         Document parentFound = document.cursor().next();
+        System.out.println(parentFound);
         List<ObjectId> children = parentFound.getList("children", ObjectId.class);
+        System.out.println(children);
         Document tempDoc = new Document();
         for (ObjectId s: children) {
             tempDoc.append("_id", s);
             FindIterable<Document> test = tree.find(tempDoc);
             tempDoc = test.cursor().next();
             childrenDocs.add(tempDoc.toJson());
+            tempDoc.clear();
         }
         //Return response in the for of a string
         return Response.ok(childrenDocs.toString(), MediaType.APPLICATION_JSON).build();
     }
+
 }

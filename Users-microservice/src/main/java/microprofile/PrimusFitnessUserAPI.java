@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package microprofile.UserServer;
+package microprofile;
 
 import com.ibm.websphere.security.jwt.JwtBuilder;
 import com.ibm.websphere.security.jwt.Claims;
@@ -29,22 +29,16 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.bson.BsonValue;
 import org.bson.Document;
 
 import javax.annotation.security.RolesAllowed;
-import javax.enterprise.context.RequestScoped;
 import javax.json.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import com.google.gson.Gson;
-import org.bson.conversions.Bson;
-import org.eclipse.microprofile.health.Liveness;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -84,7 +78,7 @@ public class PrimusFitnessUserAPI {
         mongoClient.close();
         return Response.ok(documents.toString(), MediaType.APPLICATION_JSON).build();
     }
-    @RolesAllowed({"trainer"})
+    //@RolesAllowed({"trainer"})
     @Path("/createUser")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -102,6 +96,7 @@ public class PrimusFitnessUserAPI {
 
     public Response validateLogin(@PathParam("userName") String userName, @PathParam("password") String password){
         //Create an empty document to store look up var's
+        JsonObjectBuilder jObject = Json.createObjectBuilder();
         Document lookUp = new Document();
         lookUp.append("userName", userName);
         lookUp.append("password", password);
@@ -112,15 +107,22 @@ public class PrimusFitnessUserAPI {
             Set<String> roles = new HashSet<>();
             Document foundUser = findUser.cursor().next();
             roles.add("user");
-            roles.add("trainer");
+            jObject.add("userType", "user");
+            jObject.add("firstName", foundUser.getString("firstName"));
+            jObject.add("lastName", foundUser.getString("lastName"));
+            if(foundUser.get("isTrainer").equals(true)) {
+                jObject.remove("userType");
+                roles.add("trainer");
+                jObject.add("userType", "trainer");
+            }
             String jwt = null;
             try {
                 jwt = buildJwt(userName,roles);
+                jObject.add("jwt", jwt);
             } catch (Exception e){
                 e.printStackTrace();
             }
-            System.out.println(jwt);
-            return Response.ok(jwt, MediaType.APPLICATION_JSON).build();
+            return Response.ok(jObject.build(), MediaType.APPLICATION_JSON).build();
         }else {
             return Response.status(401).build();
         }

@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>WorkoutMicroService</groupId>
-    <artifactId>Workout-microservice</artifactId>
+    <artifactId>WorkoutServer</artifactId>
     <packaging>war</packaging>
 
     <properties>

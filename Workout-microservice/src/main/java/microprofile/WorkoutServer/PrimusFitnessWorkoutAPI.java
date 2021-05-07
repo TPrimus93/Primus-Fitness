@@ -57,11 +57,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-//@RolesAllowed({"user"})
+@RolesAllowed({"user"})
 @Path("/workouts")
 public class PrimusFitnessWorkoutAPI {
-    // Creates login username and password
-
     // Creates the db-server address
     MongoClientURI uri = new MongoClientURI(
             "mongodb+srv://PrimusAdmin:Fitness101@primusfitnesscluster.t2eiv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority");
@@ -71,12 +69,11 @@ public class PrimusFitnessWorkoutAPI {
 
     //Connects to the specific db we want;
     MongoDatabase database = mongoClient.getDatabase("Workout");
-    //Users collection
+    //Workout collection
     MongoCollection<Document> workoutCollection = database.getCollection("workouts");
 
-    //Dumps whole db (Testing purposes)
 
-
+    //Posts a workout to the database
     @Path("/postWorkout")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -88,9 +85,11 @@ public class PrimusFitnessWorkoutAPI {
         Date date = dateFormat.parse(freshDoc.getString("dateCreated"));
         freshDoc.replace("dateCreated", date);
         workoutCollection.insertOne(freshDoc);
+        //mongoClient.close();
         return Response.ok().build();
     }
 
+    //Gets a specified workout by the provided ID number
     @Path("/getWorkout/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -98,9 +97,12 @@ public class PrimusFitnessWorkoutAPI {
         Document test = new Document("_id", new ObjectId(id));
         FindIterable<Document> found = workoutCollection.find(test);
         String send = found.cursor().next().toJson();
+        //mongoClient.close();
         return Response.ok(send, MediaType.APPLICATION_JSON).build();
     }
 
+    //Gets a specific workout by the email and date provided
+    //E.X: /email@email.com/Apr-19-2021
     @Path("/getWorkoutsByDate/{email}/{date}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -112,15 +114,16 @@ public class PrimusFitnessWorkoutAPI {
 
 
         lookup.append("dateCreated", formater.parse(year));
-        System.out.println(lookup.toJson());
         FindIterable<Document> found = workoutCollection.find(lookup);
         for(Document d: found){
             sendingList.add(d.toJson());
         }
-        System.out.println("here");
+        //mongoClient.close();
         return Response.ok(sendingList.toString(), MediaType.APPLICATION_JSON).build();
     }
 
+    //Gets a specific workout by the email provided
+    //E.X: /email@email.com
     @Path("/getWorkoutsByUser/{email}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -142,9 +145,12 @@ public class PrimusFitnessWorkoutAPI {
             for (int d : aList) {
                 jArrayBuilder.add(d);
             }
+            //mongoClient.close();
             return Response.ok(jArrayBuilder.build(), MediaType.APPLICATION_JSON).build();
     }
 
+    //Gets a list of workouts by the email and year provided that fall within the provided year
+    //E.X: /email@email.com/2021
     @Path("/getWorkoutsByYear/{email}/{date}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -157,7 +163,6 @@ public class PrimusFitnessWorkoutAPI {
         int intYear = Integer.parseInt(year);
         intYear++;
         Date yearPlus = formater.parse(Integer.toString(intYear));
-        System.out.println(dateYear);
 
         FindIterable<Document> found = workoutCollection.find(lookup);
         for(Document d: found){
@@ -165,9 +170,12 @@ public class PrimusFitnessWorkoutAPI {
                 sendingList.add(d.getDate("dateCreated").toString());
             }
         }
+        //mongoClient.close();
         return Response.ok(sendingList.build(), MediaType.APPLICATION_JSON).build();
     }
 
+    //Gets a list of workouts by the email, month, and year provided that fall within the provided month and year
+    //E.X: /email@email.com/Apr-2021
     @Path("/getWorkoutsByMonth/{email}/{date}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -192,120 +200,13 @@ public class PrimusFitnessWorkoutAPI {
         Date monthPlus = secondFormatter.parse(split[0]);
         //Date after
         FindIterable<Document> found = workoutCollection.find(lookup);
-        System.out.println("Start Month:  " + month);
-        System.out.println("------------------------------");
-        System.out.println("End Month:  " + monthPlus);
         for(Document d: found){
             if (monthPlus.after(d.getDate("dateCreated")) && month.isBefore(d.getDate("dateCreated").toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
                 sendingList.add(d.getDate("dateCreated").toInstant().atZone(ZoneId.systemDefault()).toLocalDate().getDayOfMonth());
             }
         }
+        //mongoClient.close();
         return Response.ok(sendingList.build(), MediaType.APPLICATION_JSON).build();
     }
-
-    //@RolesAllowed("trainer")
-    @Path("/uploadImage")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadImage() throws IOException {
-        BufferedReader fileImage = new BufferedReader(new FileReader("/home/mattljuljic/temp.txt"));//jsonObject.getString("fileName"));
-        //System.out.println(fileImage.exists());
-
-        return Response.ok(fileImage.readLine()).build();
-    }
-
-    @Path("/test")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response test(JsonObject incoming) throws IOException {
-        FileWriter tempWriter = new FileWriter("/home/mattljuljic/temp.txt",false);
-        tempWriter.write(incoming.getString("base64"));
-        tempWriter.flush();
-        Document tempDoc = new Document("base64", incoming.getString("base64"));
-        System.out.println("start");
-        System.out.println(tempDoc.toJson());
-        System.out.println("done");
-
-        return Response.ok().build();
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

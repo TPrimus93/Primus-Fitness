@@ -44,8 +44,6 @@ import java.util.Set;
 
 @Path("/user")
 public class PrimusFitnessUserAPI {
-    // Creates login username and password
-
     // Creates the db-server address
     MongoClientURI uri = new MongoClientURI(
             "mongodb+srv://PrimusAdmin:Fitness101@primusfitnesscluster.t2eiv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority");
@@ -59,6 +57,7 @@ public class PrimusFitnessUserAPI {
     MongoCollection<Document> users = database.getCollection("users");
 
     //Dumps whole db (Testing purposes)
+    //Trainer Locked
     @RolesAllowed({"trainer"})
     @Path("/all")
     @GET
@@ -66,41 +65,38 @@ public class PrimusFitnessUserAPI {
     public Response dbDump(){
         ArrayList<String> documents = new ArrayList<>();
         //Gathers the specific collection we want
-        System.out.println("Check one");
         FindIterable<Document> document = users.find();
-        System.out.println("Check two");
         //Iterate through each db hit and amend it to a string
         for (Document doc: document){
             documents.add(doc.toJson());
         }
-
-        System.out.println(documents);
-        mongoClient.close();
+        //mongoClient.close();
         return Response.ok(documents.toString(), MediaType.APPLICATION_JSON).build();
     }
-    //@RolesAllowed({"trainer"})
+
+    //Allows the trainer to create a new user(Only way to access the application is to be placed in by the trainer)
+    //Trainer Locked
+    @RolesAllowed({"trainer"})
     @Path("/createUser")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response addExercises(JsonObject test){
-        System.out.println(test.toString());
         //check user bf doing anything here
         Document doc = Document.parse(test.toString());
         users.insertOne(doc);
         return Response.ok().build();
     }
 
+    //Takes the provided credentials and checks them against the database returns a J.W.T.
     @Path("/loginAttempt/{userName}/{password}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-
     public Response validateLogin(@PathParam("userName") String userName, @PathParam("password") String password){
         //Create an empty document to store look up var's
         JsonObjectBuilder jObject = Json.createObjectBuilder();
         Document lookUp = new Document();
         lookUp.append("userName", userName);
         lookUp.append("password", password);
-        System.out.println(lookUp.toJson());
         FindIterable<Document> findUser = users.find(lookUp);
         //Find the user that matches that userName and password combination;
         if(findUser.cursor().hasNext()){
@@ -129,6 +125,7 @@ public class PrimusFitnessUserAPI {
 
     }
 
+    //J.W.T Builder
     private String buildJwt(String userName, Set<String> roles) throws Exception {
         return JwtBuilder.create("jwtBuilder")
                 .claim(Claims.SUBJECT, userName)

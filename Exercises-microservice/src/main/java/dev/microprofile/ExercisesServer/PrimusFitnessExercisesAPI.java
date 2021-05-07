@@ -14,7 +14,7 @@
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -46,10 +46,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @RequestScoped
-//@RolesAllowed({"user"})
+@RolesAllowed({"user"})
 @Path("/exercises")
 public class PrimusFitnessExercisesAPI {
-    // Creates login username and password
 
     // Creates the db-server address
     MongoClientURI uri = new MongoClientURI(
@@ -64,19 +63,20 @@ public class PrimusFitnessExercisesAPI {
     MongoCollection<Document> tree = database.getCollection("ExerciseTree");
 
     //Adds a branch node to any location based on the json input
-    //@RolesAllowed({"trainer"})
+    //Trainer locked
+    @RolesAllowed({"trainer"})
     @Path("/addExerciseBranch")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response addExercises(JsonObject freshNode) {
         String nodeType = freshNode.get("nodeType").toString().replace("\"", "");
-        System.out.println(nodeType);
         if(nodeType.equals("root")){
             Document branch  = new Document();
             branch.append("branchName", freshNode.get("branchName").toString().replace("\"", ""));
             branch.append("childrenType", freshNode.get("childrenType").toString().replace("\"", ""));
             branch.append("children", new ArrayList<ObjectId>());
             branch.append("nodeType", "root");
+            branch.append("parentNode", "null");
             tree.insertOne(branch);
 
         } else {
@@ -94,46 +94,51 @@ public class PrimusFitnessExercisesAPI {
                 freshBranch.append("childrenType", freshNode.get("childrenType").toString().replace("\"", ""));
                 freshBranch.append("children", new ArrayList<ObjectId>());
                 freshBranch.append("nodeType", freshNode.get("nodeType").toString().replace("\"", ""));
+                freshBranch.append("parentNode", parentNode.get("_id", ObjectId.class));
                 tree.insertOne(freshBranch);
                 FindIterable<Document> yanked = tree.find(freshBranch);
                 String freshBranchID = yanked.cursor().next().get("_id").toString();
                 ObjectId branchId = new ObjectId(freshBranchID);
                 ArrayList<ObjectId> freshObjectIdList = new ArrayList<>();
                 freshObjectIdList.add(branchId);
-                System.out.println(freshObjectIdList);
                 parentNode.replace("children", freshObjectIdList);
                 tree.findOneAndReplace(oldParentNode, parentNode);
             } else {
                 List<ObjectId> childrenBranches = parentNode.getList("children", ObjectId.class);
-                System.out.println(childrenBranches.toString());
                 //create fresh document for new branch
                 Document freshBranch = new Document();
                 freshBranch.append("branchName", freshNode.get("branchName").toString().replace("\"", ""));
                 freshBranch.append("childrenType", freshNode.get("childrenType").toString().replace("\"", ""));
                 freshBranch.append("children", new ArrayList<ObjectId>());
                 freshBranch.append("nodeType", freshNode.get("nodeType").toString().replace("\"", ""));
+                freshBranch.append("parentNode", parentNode.get("_id", ObjectId.class));
                 tree.insertOne(freshBranch);
                 FindIterable<Document> yanked = tree.find(freshBranch);
                 String freshBranchID = yanked.cursor().next().get("_id").toString();
-                System.out.println(freshBranchID);
                 ObjectId fBchildren = new ObjectId(freshBranchID);
                 childrenBranches.add(fBchildren);
                 parentNode.replace("children", childrenBranches);
                 tree.findOneAndReplace(oldParentNode, parentNode);
             }
         }
-         return Response.ok().build();
+        //mongoClient.close();
+        return Response.ok().build();
      }
 
-     //@RolesAllowed({"trainer"})
+    //Adds a Exercise node to any location based on the json input
+    //Trainer locked
+     @RolesAllowed({"trainer"})
      @Path("/addExercise")
      @POST
      @Produces(MediaType.APPLICATION_JSON)
      public Response addExercise(JsonObject freshExercise){
         Document foundParent = new Document("_id", new ObjectId(freshExercise.get("parentNode").toString().subSequence(10, 34).toString()));
-        Document freshDoc = new Document("name", freshExercise.get("name").toString().replace("\"", ""));
+        Document freshDoc = new Document("exerciseName", freshExercise.getString("exerciseName"));
         //freshDoc.append("gif", freshExercise.get("gif").toString().replace("\"", ""));
-        freshDoc.append("description", freshExercise.get("description").toString().replace("\"", ""));
+        freshDoc.append("description", freshExercise.getString("description"));
+        freshDoc.append("base64", freshExercise.getString("base64"));
+        freshDoc.append("parentNode", foundParent.get("_id", ObjectId.class));
+
         FindIterable<Document> found = tree.find(foundParent);
         Document freshParent = found.cursor().next();
 
@@ -145,7 +150,6 @@ public class PrimusFitnessExercisesAPI {
              ObjectId exerciseId = new ObjectId(freshExerciseID);
              ArrayList<ObjectId> freshObjectIdList = new ArrayList<>();
              freshObjectIdList.add(exerciseId);
-             System.out.println(freshObjectIdList);
              freshParent.replace("children", freshObjectIdList);
              tree.findOneAndReplace(foundParent, freshParent);
          }else {
@@ -158,6 +162,7 @@ public class PrimusFitnessExercisesAPI {
             freshParent.replace("children", siblings);
             tree.findOneAndReplace(foundParent, freshParent);
          }
+         //mongoClient.close();
         return Response.ok().build();
      }
 
@@ -174,11 +179,12 @@ public class PrimusFitnessExercisesAPI {
         for (Document doc: document){
             toplevel.add(doc.toJson());
         }
+        //mongoClient.close();
         //Return response in the for of a string
         return Response.ok(toplevel.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    //Tree travresal
+    //Tree traversal by node ID
     @Path("/descending/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -188,12 +194,9 @@ public class PrimusFitnessExercisesAPI {
         ObjectId id = new ObjectId(stringId);
         Document branchId = new Document("_id", id);
         FindIterable<Document> document = tree.find(branchId);
-        System.out.println(stringId);
         //Iterate through each db hit and amend it to an array list
         Document parentFound = document.cursor().next();
-        System.out.println(parentFound);
         List<ObjectId> children = parentFound.getList("children", ObjectId.class);
-        System.out.println(children);
         Document tempDoc = new Document();
         for (ObjectId s: children) {
             tempDoc.append("_id", s);
@@ -203,7 +206,25 @@ public class PrimusFitnessExercisesAPI {
             tempDoc.clear();
         }
         //Return response in the for of a string
+        mongoClient.close();
         return Response.ok(childrenDocs.toString(), MediaType.APPLICATION_JSON).build();
+    }
+
+    @Path("/ascending/{id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response ascending(@PathParam("id") String childId){
+        Document child = new Document("_id", new ObjectId(childId));
+        FindIterable<Document> tempChild = tree.find(child);
+        Document childFound = tempChild.cursor().next();
+        if(childFound.get("parentNode").equals("null")){
+            //mongoClient.close();
+            return Response.ok("roots").build();
+        } else {
+            ObjectId parentId = childFound.get("parentNode", ObjectId.class);
+            //mongoClient.close();
+            return Response.ok(parentId.toString(), MediaType.APPLICATION_JSON).build();
+        }
     }
 
 }

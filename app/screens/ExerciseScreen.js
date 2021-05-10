@@ -1,25 +1,82 @@
-import React, { useContext } from 'react';
-import { Text, Image, StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { Image, Text, Modal, StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView } from 'react-native';
+
 import Navbar from '../Components/Navbar';
 import ExerciseButton from '../Components/ExerciseButton';
 import { UserContext } from '../Components/UserContext';
-
+import axios from 'axios';
 
 function ExerciseScreen({ route, navigation }) {
-    const { contextObject, setContextObject } = useContext(UserContext);
+    const { contextObject } = useContext(UserContext);
+    const [branchModalVisible, setBranchModalVisible] = useState(false);
 
-    function consolelog() {
-        console.log('exercises');
+    //conditionally renders the add branch menu button based on user type 
+    function addBranch() {
+        if (contextObject.userType === 'trainer') {
+            return (
+                <TouchableOpacity style={styles.addBranchButton} onPress={() => setBranchModalVisible(true)}>
+                    <Text style={styles.addBranchButtonText}>+</Text>
+                </TouchableOpacity>
+            );
+        }
     }
+
+    //handles the add exercise button on Press
+    function addExerciseFunction() {
+        setBranchModalVisible(false);
+        navigation.navigate('CreateExercise', { parentID: route.params.parentID, parentTitle: route.params.parentTitle });
+    }
+
+    function goBack() {
+        if (route.params != null && route.params.parentID != 'root') {
+            return (
+                <TouchableOpacity style={styles.rightArrow} onPress={() => getParent()}>
+                    <Image source={require('../assets/goBackIcon.png')} />
+                </TouchableOpacity>
+            );
+        }
+    }
+
+    function getParent() {
+        axios.get('http://68.172.33.6:9083/exercises/ascending/' + route.params.parentID, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
+            .then(response => goBackFunction(response.data)).catch(e => console.log(e));
+    }
+    function goBackFunction(id) {
+        if (id != 'roots') {
+            axios.get('http://68.172.33.6:9083/exercises/descending/' + id, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
+                .then(response => navigation.navigate('Home', { branches: response.data, childrenType: 'branch', parentID: id, })).catch(e => console.log(e));
+        } else {
+            axios.get('http://68.172.33.6:9083/exercises/allRoots', { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
+                .then(response => navigation.navigate('Home', { branches: response.data, childrenType: 'branch', parentID: 'root', })).catch(e => console.log(e));
+        }
+    }
+
+
     return (
         <SafeAreaView style={styles.container}>
-            {consolelog()}
             <Navbar />
+            {goBack()}
+            <Text style={styles.buttonText}>{route.params.parentTitle}</Text>
             <View style={styles.scrollContainer}>
                 <ScrollView style={styles.buttonMenu} horizontal={false} >
-                    {route.params.exercises.map((exercise) => <ExerciseButton key={exercise._id.$oid} title={exercise.name} exerciseID={exercise._id.$oid} index={contextObject.workoutList.findIndex(x => x.exerciseID === exercise._id.$oid)} />)}
+                    {route.params.exercises.map((exercise) => <ExerciseButton key={exercise._id.$oid} title={exercise.exerciseName} description={exercise.description} exerciseID={exercise._id.$oid} index={contextObject.workoutList.findIndex(x => x.exerciseID === exercise._id.$oid)} picture={exercise.base64} />)}
                 </ScrollView>
             </View>
+            {addBranch()}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={branchModalVisible}
+            >
+                <View style={styles.branchModalView}>
+                    <TouchableOpacity style={styles.modalButton} onPress={() => addExerciseFunction()}>
+                        <Text style={styles.modalButtonText}>Add Exercise</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.modalButton} onPress={() => setBranchModalVisible(false)}>
+                        <Text style={styles.modalButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -33,43 +90,71 @@ const styles = StyleSheet.create({
     scrollContainer: {
         alignItems: 'center',
     },
-    centerButton: {
-        height: 80,
-        borderColor: "#E51B23",
-        borderWidth: 3,
-        marginBottom: 10,
-        marginTop: 10,
-        alignSelf: 'stretch',
-        flexDirection: 'row',
-        justifyContent: 'flex-start'
-    },
     buttonText: {
-        marginTop: 5,
+        marginTop: '15%',
         fontSize: 35,
-        marginRight: "20%",
         color: '#E51B23',
         fontWeight: "bold",
-        textAlign: 'left'
+        textAlign: 'center'
     },
     buttonMenu: {
-        top: 120,
-        marginBottom: 100,
+        marginTop: '10%',
+        marginBottom: '50%',
         width: '99%'
     },
-    plusButton: {
-        marginRight: 15,
-        marginLeft: 15,
-        marginTop: 25,
-
+    addBranchButton: {
+        position: 'absolute',
+        right: 15,
+        width: '2%',
+        height: '5%',
+        bottom: 50,
+        // borderWidth: 3,
+        borderRadius: 90,
+        alignItems: 'center',
+        marginLeft: '5%',
+        marginRight: '5%',
+        justifyContent: 'center',
+        backgroundColor: 'black',
+    },
+    addBranchButtonText: {
+        fontSize: 25,
+        color: '#E51B23',
+        fontWeight: "bold",
+        textAlign: 'center',
+        alignSelf: 'center',
+    },
+    branchModalView: {
+        flex: 1,
+        width: '40%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center'
+    },
+    modalButton: {
+        width: '100%',
+        height: 60,
+        borderWidth: 3,
+        borderRadius: 25,
+        alignItems: 'center',
+        bottom: 1,
+        marginLeft: '5%',
+        marginRight: '5%',
+        marginTop: '5%',
+        justifyContent: 'center',
+        backgroundColor: 'black',
+    },
+    modalButtonText: {
+        fontSize: 20,
+        color: '#E51B23',
+        fontWeight: "bold",
+        textAlign: 'center',
+        alignSelf: 'center',
     },
     rightArrow: {
-        marginTop: 25,
-        marginRight: 10,
-        marginLeft: 25
+        alignSelf: 'center',
+        marginLeft: '24%',
+        top: '1.75%',
     },
-    exerciseIcon: {
-
-    }
 
 });
 

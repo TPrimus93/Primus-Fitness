@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { TextInput, StyleSheet, TouchableOpacity, View, SafeAreaView, ScrollView, Image, Text } from 'react-native';
-import Navbar from '../Components/Navbar';
+import React, { useContext } from 'react';
+import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import axios from 'axios';
-import { setStatusBarStyle } from 'expo-status-bar';
+
+import { UserContext } from '../Components/UserContext';
+import Navbar from '../Components/Navbar';
 
 
+function SettingsScreen({ navigation }) {
 
-function SettingsScreen() {
-
+    const { contextObject } = useContext(UserContext);
     function button(title) {
         return (
             <View style={styles.buttonView}>
@@ -18,6 +19,19 @@ function SettingsScreen() {
         );
     };
 
+    function addUser() {
+        if (contextObject.userType === 'trainer') {
+            return (
+                <View style={styles.buttonView}>
+                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CreateUser')}>
+                        <Text style={styles.buttonText}>Create User</Text>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+
+    }
+
 
 
     return (
@@ -25,11 +39,10 @@ function SettingsScreen() {
             <Navbar />
             <Text style={styles.nameText}>Settings</Text>
             <View style={styles.menuView}>
-                {button('Username')}
                 {button('Password')}
                 {button('Birthday')}
                 {button('Name')}
-                {button('Weight')}
+                {addUser()}
             </View>
         </View>
 

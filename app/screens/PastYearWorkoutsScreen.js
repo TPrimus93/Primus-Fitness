@@ -1,22 +1,31 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { TextInput, StyleSheet, TouchableOpacity, View, SafeAreaView, ScrollView, Image, Text } from 'react-native';
-import axios from 'axios';
+import React from 'react';
+import { StyleSheet, View, ScrollView, Text } from 'react-native';
 import Navbar from '../Components/Navbar';
 import YearButton from '../Components/YearButton';
-import { UserContext } from '../Components/UserContext';
 
 
 function PastYearWorkoutsScreen({ route }) {
-    const { contextObject, setContextObject } = useContext(UserContext);
 
+    //renders the years menu
+    function yearMenu() {
+        if (route.params.dates.length === 0) {
+            return (
+                <Text style={styles.titleText}>You have no previous workouts logged</Text>
+            );
+
+        } else {
+            return (
+                <ScrollView style={styles.scrollContainer}>
+                    {route.params.dates.map((date) => <YearButton key={date} year={date} />)}
+                </ScrollView>
+            );
+        }
+    }
 
     return (
         <View style={styles.container}>
-            {console.log(route.params)}
             <Navbar />
-            <ScrollView style={styles.scrollContainer}>
-                {route.params.dates.map((date) => <YearButton key={date} year={date} />)}
-            </ScrollView>
+            {yearMenu()}
         </View>
 
     );
@@ -29,6 +38,13 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         marginTop: '30%'
+    },
+    titleText: {
+        marginTop: '30%',
+        fontSize: 25,
+        color: 'white',
+        fontWeight: "bold",
+        textAlign: 'center'
     },
     yearButton: {
         width: '80%',

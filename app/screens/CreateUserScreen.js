@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { TextInput, StyleSheet, TouchableOpacity, View, SafeAreaView, Image, Text } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Navbar from '../Components/Navbar';
 import axios from 'axios';
+import { UserContext } from '../Components/UserContext';
 
 
 
 
-function CreateUserScreen() {
+function CreateUserScreen({ navigation }) {
 
+    const { contextObject } = useContext(UserContext);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [firstName, setFirstName] = useState("");
@@ -35,8 +37,8 @@ function CreateUserScreen() {
         showMode('date');
     };
 
+    //sets trainer checkbox
     function setTrainer() {
-        console.log(isTrainer);
         if (isTrainer == true) {
             setIsTrainer(!isTrainer);
             setTrainButton(<Image source={require('../assets/CheckBoxEmpty.png')} />);
@@ -44,6 +46,19 @@ function CreateUserScreen() {
             setIsTrainer(!isTrainer);
             setTrainButton(<Image source={require('../assets/CheckBoxFilled.png')} />);
         }
+    }
+
+    //handles POST request for adding user to database
+    function createUserButton() {
+        axios.post('http://68.172.33.6:9081/user/createUser', {
+            firstName: firstName,
+            lastName: lastName,
+            birthday: date,
+            userName: username,
+            password: password,
+            isTrainer: isTrainer
+        }, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
+            .then(navigation.navigate('Settings'));
     }
 
     return (
@@ -111,7 +126,7 @@ function CreateUserScreen() {
 
             </View>
             <View style={styles.submitButtonView}>
-                <TouchableOpacity style={styles.submitButton}  >
+                <TouchableOpacity style={styles.submitButton} onPress={() => createUserButton()}>
                     <Text style={styles.submitButtonText}>Submit</Text>
                 </TouchableOpacity>
             </View>
@@ -143,7 +158,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center'
     },
     inputFields: {
-        marginTop: '25%',
+        marginTop: '20%',
         alignContent: 'center'
     },
     dateButton: {
@@ -175,9 +190,10 @@ const styles = StyleSheet.create({
         alignSelf: "center",
     },
     submitButtonView: {
+        //position: 'absolute',
         width: '100%',
-        marginTop: '30%',
-        bottom: '5%',
+        marginTop: '15%',
+        //bottom: '3%',
         alignItems: 'center'
     },
     submitButton: {

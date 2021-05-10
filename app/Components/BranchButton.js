@@ -1,23 +1,24 @@
 import axios from 'axios';
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { UserContext } from '../Components/UserContext';
 
 function BranchButton({ title, bID, ctype }) {
     const navigation = useNavigation();
-    const { contextObject, setContextObject } = useContext(UserContext);
+    const { contextObject } = useContext(UserContext);
 
-
+    //handles getting the children of a branch 
     function getBranches(branchID, childrenType) {
-        console.log(childrenType);
-        if (childrenType == 'branch') {
-            console.log(contextObject);
+        //redirects to exercises page if children are exercises
+        if (childrenType == 'workout') {
             axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
-                .then(response => navigation.navigate('Home', { branches: response.data, })).catch(e => console.log(e));
-        } else {
+                .then(response => navigation.navigate('Exercise', { exercises: response.data, parentID: branchID, parentTitle: title, })).catch(e => console.log(e));
+        }
+        //redirects to home if children are branches
+        else {
             axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
-                .then(response => navigation.navigate('Exercise', { exercises: response.data, })).catch(e => console.log(e));
+                .then(response => navigation.navigate('Home', { branches: response.data, childrenType: childrenType, parentID: branchID, })).catch(e => console.log(e));
         }
     }
 

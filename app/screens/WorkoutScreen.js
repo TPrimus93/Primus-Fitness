@@ -1,67 +1,21 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Text, Image, StyleSheet, TouchableOpacity, View, TextInput, SafeAreaView, ScrollView, Modal } from 'react-native';
-import Navbar from '../Components/Navbar';
+import { Text, Image, StyleSheet, TouchableOpacity, View, TextInput, SafeAreaView, ScrollView, Modal, Alert } from 'react-native';
 import axios from 'axios';
+
+import Navbar from '../Components/Navbar';
 import AddSetButton from '../Components/AddSetButton';
 import WorkoutButton from '../Components/WorkoutButton';
 import SetButton from '../Components/SetButton';
 import { UserContext } from '../Components/UserContext';
 
-
-// {
-//     "belongsTo": "trevor",
-//     "dateCreated": "4/17/2021",
-//     "notes": [
-//       {
-//         "owner": "Trevor",
-//         "note": "testing"
-//       }
-//     ],
-//     "exercises": [
-//       {
-//         "exerciseID": 1,
-//         "exerciseName": "Bench Press",
-//         "reps": [
-//           1
-//         ],
-//         "weight": [
-//           150
-//         ]
-//       }
-//     ]
-//   }
-
-
-
 function WorkoutScreen({ route, navigation }) {
 
-    const { contextObject, setContextObject } = useContext(UserContext);
-    const [contextWorkout, setContextWorkout] = useState(false);
+    const { contextObject } = useContext(UserContext);
     const [notesModalVisible, setNotesModalVisible] = useState(false);
     const [finishModalVisible, setFinishModalVisible] = useState(false);
-    //const [workoutPosition, setWorkoutPosition] = useState(0)
-    const [numberNotes, setNumberNotes] = useState(1);
-    const [notes, setNotes] = useState("");
     const [note, setNote] = useState("");
-    //const [weight, setWeight] = useState(100);
-    //const [reps, setReps] = useState(10);
 
-
-    var par = [
-        { "exerciseID": 2, "exerciseName": "Dead-Lift" },
-        { "exerciseID": 3, "exerciseName": "Squats" },
-        { "exerciseID": '60732f6d992772fc8ae2c690', "exerciseName": "Bench Press" },
-        { "exerciseID": 4, "exerciseName": "Press" }
-    ]
-
-    var tempNotes = [
-        "Trevor Primus: Set 3 was hard so I didn't do set 4 on Squats.",
-        "Trainer: Okay. Did you hurt yourself or just tired?",
-        "Trevor Primus: I was just tired.",
-        "Trainer: Okay. Next time try lowering the weight and doing an extra couple reps instead",
-        "Trevor Primus: Okay"
-    ]
-
+    var currentDate = new Date();
     var workoutArray = [];
     var setsArray = [2, 3, 3, 3];
     var workoutPos = 0;
@@ -73,38 +27,15 @@ function WorkoutScreen({ route, navigation }) {
         reps = route.params.reps;
     }
 
-
-    // useEffect(() => {
-    //     console.log(weight)
-
-    // });
-    // var tempWeight = contextObject.workout[workoutPos].weight[setPos];
-
-    // if (route.params != null) {
-    //     if (route.params.workoutPosition != null) {
-    //         if (route.params.workoutPosition != workoutPosition) {
-    //             setWorkoutPosition(route.params.workoutPosition);
-    //         } else {
-    //             if (route.params.setArray != null) {
-    //                 console.log('setArray')
-    //                 setsArray = route.params.setArray;
-    //             }
-    //             if (route.params.setPosition != null) {
-    //                 setPos = route.params.setPosition;
-    //             }
-    //         }
-    //         workoutPos = route.params.workoutPosition;
-    //     }
-    // }
-
+    //Sets the context workout position 
     function setWPosition() {
         contextObject.workoutPosition = route.params.workoutPosition;
         checkWorkout();
     }
 
+    //Sets 
     function checkWorkout() {
         var setsLength = contextObject.workout[workoutPos].weight.length;
-        console.log('setslength ' + setsLength);
         if (setsLength != 0) {
             for (var index = 0; index < setsLength; index++) {
                 setsArray[index] = 1;
@@ -128,19 +59,28 @@ function WorkoutScreen({ route, navigation }) {
                 contextObject.workout.push({
                     "exerciseID": contextObject.workoutList[index].exerciseID,
                     "exerciseName": contextObject.workoutList[index].title,
+                    "description": contextObject.workoutList[index].description,
+                    "picture": contextObject.workoutList[index].picture,
                     "reps": [],
                     "weight": []
                 });
             }
-            setContextWorkout(true);
+            contextObject.workoutStarted = true;
         }
     }
 
     //Updates the workout screen
     function updateWorkout() {
         //Checks to see if workout is just starting
-        if (contextWorkout === false) {
+        if (contextObject.workoutStarted === false) {
             startWorkout();
+        } else if (route.params == null) {
+            checkWorkout();
+            //Set the workout page if workout is already started 
+            if (contextObject.workout[workoutPos].reps.length != 0) {
+                reps = contextObject.workout[workoutPos].reps[currentSetPos - 1];
+                weight = contextObject.workout[workoutPos].weight[currentSetPos - 1];
+            }
         } else {
             //Checks if the buttons have set the route params
             if (route.params != null && route.params.workoutPosition != null) {
@@ -158,9 +98,9 @@ function WorkoutScreen({ route, navigation }) {
                         currentSetPos = route.params.setPosition;
                         if (currentSetPos != contextObject.setPosition) {
                             if (contextObject.workout[workoutPos].weight[currentSetPos] != null) {
-                                contextObject.workout[workoutPos].weight[contextObject.setPosition] = weight;
-                                contextObject.workout[workoutPos].reps[contextObject.setPosition] = reps;
-                                reps = contextObject.workout[workoutPos].reps[currentSetPos]
+                                // contextObject.workout[workoutPos].weight[contextObject.setPosition] = weight;
+                                // contextObject.workout[workoutPos].reps[contextObject.setPosition] = reps;
+                                reps = contextObject.workout[workoutPos].reps[currentSetPos];
                                 weight = contextObject.workout[workoutPos].weight[currentSetPos];
                                 contextObject.setPosition = currentSetPos;
                             } else {
@@ -175,14 +115,14 @@ function WorkoutScreen({ route, navigation }) {
         }
     }
 
-    function addNote(noteInput) {
-        if (noteInput != '') {
-            setNotes(notes + 'Note ' + numberNotes + ':' + noteInput + '\n');
-            setNote('');
-            setNumberNotes(numberNotes + 1);
-        }
+    function addNote() {
+        var tempNote = contextObject.name + ': ' + note;
+        contextObject.notes.push(tempNote);
+        setNote('');
+        navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setsArray, setPosition: currentSetPos, weight: weight, reps: reps });
     };
 
+    //handles the reps increase/decrease buttons
     function setRep(direction) {
         if (direction === 'up') {
             reps += 1;
@@ -193,21 +133,21 @@ function WorkoutScreen({ route, navigation }) {
         }
     };
 
+    //handles the weight increase/decrease buttons
     function setWeights(direction) {
         if (direction === 'up') {
-            weight += 2.5;
+            weight += 5;
             navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setsArray, setPosition: currentSetPos, weight: weight, reps: reps });
-            //contextObject.workout[workoutPos].weight[currentSetPos] += 2.5;
         } else if (direction == 'down' && weight > 0) {
-            weight -= 2.5;
+            weight -= 5;
             navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setsArray, setPosition: currentSetPos, weight: weight, reps: reps });
         }
     };
 
-
+    //Sets name title to the current workout
     function CurrentExerciseName(exerciseName) {
         return (
-            <View style={styles.textContainer}>
+            <View style={styles.titleContainer}>
                 <Text style={styles.currentExerciseText}>{exerciseName}</Text>
             </View>
         );
@@ -235,13 +175,13 @@ function WorkoutScreen({ route, navigation }) {
         return (
             <ScrollView style={styles.buttonMenu} horizontal={true}>
                 {setsArray.map((setType, index) => <SetButton key={index} setIndex={index} buttonType={setType} setArray={setsArray} workoutPos={workoutPos} setPos={currentSetPos} weight={weight} reps={reps} />)}
-                <AddSetButton />
+                <AddSetButton setArray={setsArray} workoutPos={workoutPos} setPos={currentSetPos} weight={weight} reps={reps} />
             </ScrollView>
         );
     }
 
-    // index = a.findIndex(x => x.prop2 ==="yutu");
 
+    //renders the weight menu
     function weightMenu(x) {
         if (setsArray[x] === 1) {
             return (
@@ -258,7 +198,6 @@ function WorkoutScreen({ route, navigation }) {
             );
         } else {
             return (
-
                 <View style={styles.repsContainer}>
                     <Text style={styles.repsText}>Weight</Text>
                     <TouchableOpacity style={styles.upArrow} onPress={() => setWeights('up')}>
@@ -273,6 +212,7 @@ function WorkoutScreen({ route, navigation }) {
         }
     }
 
+    //renders the weight menu
     function repsMenu(x) {
         if (setsArray[x] === 1) {
             return (
@@ -287,9 +227,7 @@ function WorkoutScreen({ route, navigation }) {
                     </TouchableOpacity>
                 </View>
             );
-
         } else {
-
             return (
                 <View style={styles.repsContainer}>
                     <Text style={styles.repsText}>Reps</Text>
@@ -297,7 +235,7 @@ function WorkoutScreen({ route, navigation }) {
                         <Image source={require('../assets/UpArrow.png')} />
                     </TouchableOpacity>
                     <Text style={styles.weightButtonText}>{reps}</Text>
-                    <TouchableOpacity style={styles.downArrow} onPress={() => setRep('up')}>
+                    <TouchableOpacity style={styles.downArrow} onPress={() => setRep('down')}>
                         <Image source={require('../assets/DownArrow.png')} />
                     </TouchableOpacity>
                 </View>
@@ -305,6 +243,7 @@ function WorkoutScreen({ route, navigation }) {
         }
     }
 
+    //handles adding a note to the workout
     function addNoteButton() {
         if (note === '') {
             return (
@@ -314,23 +253,49 @@ function WorkoutScreen({ route, navigation }) {
             );
         } else {
             return (
-                <TouchableOpacity style={styles.addNoteButton} >
+                <TouchableOpacity style={styles.addNoteButton} onPress={() => addNote()}>
                     <Text style={styles.notesButtonText}>+</Text>
                 </TouchableOpacity>
             );
         }
     }
 
+    //Post request for finished workout
+    function submitWorkout() {
+        var tempWorkout = [];
+        for (var index = 0; index < contextObject.workout.length; index++) {
+            if (contextObject.workout[index].reps.length != 0) {
+                tempWorkout.push(contextObject.workout[index])
+            }
+        }
+        axios.post('http://68.172.33.6:9082/workouts/postWorkout', {
+            belongsTo: contextObject.username,
+            dateCreated: new Date(),
+            notes: contextObject.notes,
+            exercises: tempWorkout
+        }, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } }).catch(e => console.log(e)).then(Alert.alert(
+            "Workout Posted",
+            "Your workout was uploaded",
+            [
+                {
+                    text: "Ok",
+                    onPress: () => setFinishModalVisible(false),
+                    style: "cancel",
+                },
+            ],
+            {
+                cancelable: true,
+                onDismiss: () => setFinishModalVisible(false),
+            }
+        ));
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.top}>
                 <Navbar />
+                {/* {console.log(contextObject.workout)} */}
                 {updateWorkout()}
-                {console.log(weight)}
-                {console.log(contextObject.workout)}
-                {console.log('contextPos ' + contextObject.setPosition)}
-                {console.log(setsArray)}
-                {console.log('currentWorkoutPos ' + workoutPos)}
                 {CurrentExerciseName(contextObject.workout[workoutPos].exerciseName)}
                 <View style={styles.workoutScrollContainer}>
                     {workoutMenu()}
@@ -364,7 +329,7 @@ function WorkoutScreen({ route, navigation }) {
                         <Text style={styles.notesTitle}>Notes</Text>
                         <TextInput
                             style={styles.notesInputText}
-                            placeholder="Notes.."
+                            placeholder="Add Note..."
                             multiline={true}
                             placeholderTextColor='white'
                             onChangeText={(note) => setNote(note)}
@@ -374,7 +339,7 @@ function WorkoutScreen({ route, navigation }) {
                     </View>
                     <Text style={styles.pastNotesTitle}>Past Notes</Text>
                     <ScrollView style={styles.notesScrollView}>
-                        {tempNotes.map((n, index) => <Text key={index} style={styles.pastNotesText}>{n}</Text>)}
+                        {contextObject.notes.map((n, index) => <Text key={index} style={styles.pastNotesText}>{n}</Text>)}
                     </ScrollView>
                 </View>
             </Modal>
@@ -385,13 +350,15 @@ function WorkoutScreen({ route, navigation }) {
             >
                 <View style={styles.centeredView}>
                     <View style={styles.finishModelView}>
-                        <TouchableOpacity style={styles.exitNotesButton} onPress={() => setFinishModalVisible(false)}>
-                            <Text style={styles.exitNotesButtonText}>x</Text>
-                        </TouchableOpacity>
                         <Text style={styles.finishText}>Finish Workout</Text>
-                        <TouchableOpacity style={styles.bottomButton} onPress={() => setFinishModalVisible(false)}>
-                            <Text style={styles.finishButtonText}>Finish</Text>
-                        </TouchableOpacity>
+                        <View style style={styles.finishModalButtonContainer}>
+                            <TouchableOpacity style={styles.finishModalButton} onPress={() => submitWorkout()}>
+                                <Text style={styles.finishButtonText}>Finish</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.finishModalButton} onPress={() => setFinishModalVisible(false)}>
+                                <Text style={styles.notesButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>
@@ -412,11 +379,16 @@ const styles = StyleSheet.create({
     top: {
         flex: 7
     },
+    finishModalButtonContainer: {
+        marginTop: '10%',
+        width: '100%',
+        flexDirection: 'row'
+    },
     workoutScrollContainer: {
         alignItems: 'center',
         marginTop: '3%',
         marginLeft: '5%',
-        marginRight: '2%'
+        marginRight: '1%'
     },
     setScrollContainer: {
         alignItems: 'center',
@@ -424,7 +396,7 @@ const styles = StyleSheet.create({
         marginLeft: '5%',
         marginRight: '5%'
     },
-    textContainer: {
+    titleContainer: {
         alignItems: 'center',
         marginTop: '12%',
     },
@@ -444,8 +416,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginTop: 10,
         marginBottom: 10,
-        alignSelf: 'center',
-        position: 'relative'
+        alignSelf: 'center'
     },
     buttonMenu: {
         marginLeft: '5%',
@@ -497,18 +468,10 @@ const styles = StyleSheet.create({
     },
     bottomMenu: {
         flex: 1,
-        // alignContent: 'flex-end',
-        // justifyContent: 'flex-end',
-        //bottom: 36,
-        //top: '20%',
         width: '100%',
-        //height: '100%',
-        //marginTop: '50%',
-        //position: 'absolute',
         flexDirection: 'row',
     },
     bottomButton: {
-        //position: 'absolute',
         width: '40%',
         height: 60,
         borderWidth: 3,
@@ -538,7 +501,7 @@ const styles = StyleSheet.create({
     notesModelView: {
         flex: 1,
         borderRadius: 45,
-        marginBottom: '25%',
+        marginBottom: '10%',
         width: '80%',
         height: '50%',
         backgroundColor: '#2D2D2D',
@@ -604,7 +567,6 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
         color: 'white',
         alignSelf: 'center'
-
     },
     notesScrollView: {
         flex: 1,
@@ -652,18 +614,15 @@ const styles = StyleSheet.create({
         width: 1,
         height: 20,
         bottom: '5%',
-        // borderWidth: 3,
-        // borderRadius: 90,
         alignItems: 'center',
         marginLeft: '5%',
         marginRight: '5%',
         justifyContent: 'center',
-        // backgroundColor: 'black',
     },
     exitNotesButtonText: {
         fontSize: 25,
         color: 'white',
-        //fontWeight: "bold",
+        fontWeight: "bold",
         textAlign: 'center',
         alignSelf: 'center',
     },
@@ -675,24 +634,16 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginBottom: 30
     },
-    // notesInputView: {
-    //     bottom: 0,
-    //     marginLeft: '5%',
-    //     marginTop: '5%',
-    //     height: 250,
-    //     height: 240,
-    //     width: '90%',
-    //     borderWidth: 2,
-    //     borderColor: "#707070",
-    //     backgroundColor: "white",
-    //     padding: 20,
-    //     textAlign: 'left',
-
-    //     position: 'absolute',
-    //     justifyContent: 'flex-end'
-    // },
-
-
+    finishModalButton: {
+        width: '40%',
+        height: 60,
+        borderRadius: 25,
+        alignItems: 'center',
+        marginLeft: '5%',
+        marginRight: '5%',
+        justifyContent: 'center',
+        backgroundColor: 'black',
+    },
 });
 
 export default WorkoutScreen;

@@ -1,29 +1,24 @@
 import React, { useState, useContext } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { UserContext } from '../Components/UserContext';
 
-function ExerciseButton({ title, exerciseID, index }) {
+function ExerciseButton({ title, description, exerciseID, index, picture }) {
 
-    // var xy = contextObject.workoutList.findIndex(y => y.exerciseID === eID);
+    //sets the plus/minus icon image
     var x = <Image source={require('../assets/PlusIcon.png')} />
     if (index > -1) {
         x = <Image source={require('../assets/MinusIcon.png')} />
     }
-    const navigation = useNavigation();
+
+    const [expand, setExpand] = useState(false);
     const [addRemove, setAddRemove] = useState(false);
     const [addRemoveButton, setAddRemoveButton] = useState(x);
-    const { contextObject, setContextObject } = useContext(UserContext);
+    const { contextObject } = useContext(UserContext);
 
-    // function getExercises() {
-    //     axios.get('http://68.172.33.6:9083/exercises/descending/' + branchID, { headers: { "Authorization": `Bearer ${myjwt}` } })
-    //         .then(response => navigation.navigate('Home', { myJwt: myjwt, usertype: userType, user: username, branches: response.data, })).catch(e => console.log(e));
-    // }
-
+    //conditionally renders the plus/minus icon if exercise is in the current workout list
     function addExercise(eID) {
         if (addRemove == false && contextObject.workoutList.findIndex(y => y.exerciseID === eID)) {
-            contextObject.workoutList.push({ exerciseID: eID, title: title });
-            console.log(contextObject.workoutList);
+            contextObject.workoutList.push({ exerciseID: eID, title: title, description: description, picture: picture });
             setAddRemove(true);
             setAddRemoveButton(<Image source={require('../assets/MinusIcon.png')} />);
         } else {
@@ -31,32 +26,56 @@ function ExerciseButton({ title, exerciseID, index }) {
             if (index !== -1) {
                 contextObject.workoutList.splice(index, 1);
             }
-            console.log(contextObject.workoutList);
             setAddRemove(false);
             setAddRemoveButton(<Image source={require('../assets/PlusIcon.png')} />);
         }
     }
 
+    //gives the exercise button
+    function expandExercise() {
+        if (expand === false) {
+            //returns the unexpanded exercise button
+            return (
+                <View style={styles.unexpandedButton} >
+                    <TouchableOpacity style={styles.plusButton} onPress={() => addExercise(exerciseID)}>
+                        {addRemoveButton}
+                    </TouchableOpacity>
+                    <Text style={styles.buttonText}>{title}</Text>
+                    <Image source={{ uri: 'data:image/gif;base64,' + picture }} style={styles.exerciseIcon} />
+                    <TouchableOpacity style={styles.rightArrow} onPress={() => setExpand(!expand)}>
+                        <Image source={require('../assets/RightArrowIcon.png')} />
+                    </TouchableOpacity>
+                </View>
+            );
+        } else {
+            //returns the expanded exercise button
+            return (
+                <View style={styles.expandedButton} >
+                    <TouchableOpacity style={styles.expandedPlusButton} onPress={() => addExercise(exerciseID)}>
+                        {addRemoveButton}
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.downArrow} onPress={() => setExpand(!expand)}>
+                        <Image source={require('../assets/DownArrowIcon.png')} />
+                    </TouchableOpacity>
+                    <Text style={styles.expandedButtonText}>{title}</Text>
+                    <Image source={{ uri: 'data:image/gif;base64,' + picture }} style={styles.expandedIcon} />
+                    <Text style={styles.buttonText}>Description</Text>
+                    <Text style={styles.descriptionText}>{description}</Text>
+                </View>
+            );
+        }
+    }
+
     return (
-        <View style={styles.centerButton} >
-            {/* {console.log('Here ' + contextObject.workoutList.findIndex(x => x.exerciseID === exerciseID))}
-            {console.log('index ' + index)}
-            {console.log('eID ' + exerciseID)} */}
-            <TouchableOpacity style={styles.plusButton} onPress={() => addExercise(exerciseID)}>
-                {addRemoveButton}
-            </TouchableOpacity>
-            <Text style={styles.buttonText}>{title}</Text>
-            <Image style={styles.exerciseIcon} source={require('../assets/PushUpsIcon.png')} />
-            <TouchableOpacity style={styles.rightArrow}>
-                <Image source={require('../assets/RightArrowIcon.png')} />
-            </TouchableOpacity>
+        <View>
+            {expandExercise()}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    centerButton: {
-        height: 80,
+    unexpandedButton: {
+        height: 100,
         borderColor: "#E51B23",
         borderWidth: 3,
         marginBottom: 10,
@@ -66,36 +85,72 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         borderRadius: 7
     },
+    expandedButton: {
+        height: 550,
+        borderColor: "#E51B23",
+        borderWidth: 3,
+        marginBottom: 10,
+        marginTop: 10,
+        alignSelf: 'stretch',
+        borderRadius: 7
+    },
     buttonText: {
+        width: '45%',
+        maxWidth: '45%',
         fontSize: 30,
-        // marginRight: "20%",
         color: '#E51B23',
         fontWeight: "bold",
         textAlign: 'left',
-        alignSelf: 'center'
-    },
-    buttonMenu: {
-        top: 120,
-        marginBottom: 100,
-        width: '99%'
+        alignSelf: 'center',
     },
     plusButton: {
-        marginRight: 15,
-        marginLeft: 15,
-
+        marginLeft: '5%',
+        marginRight: '5%',
         alignSelf: 'center'
     },
     rightArrow: {
-        position: 'absolute',
-        right: '1%',
         alignSelf: 'center',
-        marginRight: 10,
-        marginLeft: 25
+        marginLeft: '8%'
     },
     exerciseIcon: {
-        position: 'absolute',
-        right: '8%'
+        alignSelf: 'center',
+        marginLeft: '8%',
+        width: 75,
+        height: 75
     },
+    downArrow: {
+        position: 'absolute',
+        top: 37,
+        right: 20
+    },
+    expandedIcon: {
+        alignSelf: 'center',
+        marginTop: '5%',
+        marginBottom: '5%',
+        width: 200,
+        height: 200
+    },
+    expandedPlusButton: {
+        position: 'absolute',
+        left: 22.5,
+        top: 37,
+    },
+    expandedButtonText: {
+        marginTop: '3%',
+        fontSize: 30,
+        color: '#E51B23',
+        fontWeight: "bold",
+        textAlign: 'left',
+        alignSelf: 'center',
+    },
+    descriptionText: {
+        marginTop: '2%',
+        marginLeft: 15,
+        fontSize: 15,
+        color: 'white',
+        fontWeight: "bold",
+        textAlign: 'left',
+    }
 
 });
 

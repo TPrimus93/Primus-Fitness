@@ -12,7 +12,6 @@ function SetButton({ setIndex, buttonType, setArray, workoutPos, setPos, weight,
 
     function finishedSetButton() {
         setArray[setIndex] = 1;
-        //console.log(setArray);
         return (
             <View style={styles.setContainer}>
                 <TouchableOpacity style={styles.setButtonDark} onPress={() => finishedSetClick()}>
@@ -26,7 +25,6 @@ function SetButton({ setIndex, buttonType, setArray, workoutPos, setPos, weight,
     function currentSetButton() {
         if (setArray.indexOf(2) != setIndex)
             setArray[setIndex] = 1;
-        //console.log(setArray);
         return (
             <View style={styles.setContainer}>
                 <TouchableOpacity style={styles.setButtonDark} onPress={() => currentSetClick()}>
@@ -52,8 +50,8 @@ function SetButton({ setIndex, buttonType, setArray, workoutPos, setPos, weight,
     function nextSetClick() {
         console.log(setPos);
         setPos = setArray.indexOf(3);
-        setArray[setPos] = 2;
         setArray[setArray.indexOf(2)] = 1;
+        setArray[setPos] = 2;
         navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos, weight: weight, reps: reps });
     }
 

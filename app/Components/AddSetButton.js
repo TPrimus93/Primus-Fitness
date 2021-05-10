@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
-import { Text, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-function AddSetButton() {
+function AddSetButton({ setArray, workoutPos, setPos, weight, reps }) {
+
+    const navigation = useNavigation();
+
+    //handles adding a set to the workouts
+    function addSet() {
+        setArray.push(3);
+        navigation.navigate('Workout', { workoutPosition: workoutPos, setArray: setArray, setPosition: setPos, weight: weight, reps: reps });
+    }
+
     return (
         <View style={styles.setContainer}>
-            <TouchableOpacity style={styles.setButtonAdd}>
+            <TouchableOpacity style={styles.setButtonAdd} onPress={() => addSet()}>
                 <Text style={styles.buttonAddText}>+</Text>
             </TouchableOpacity>
         </View>

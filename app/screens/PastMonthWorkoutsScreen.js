@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { TextInput, StyleSheet, TouchableOpacity, View, SafeAreaView, ScrollView, Image, Text } from 'react-native';
+import React, { useContext } from 'react';
+import { StyleSheet, TouchableOpacity, View, ScrollView, Text } from 'react-native';
 import Navbar from '../Components/Navbar';
 import axios from 'axios';
 import { UserContext } from '../Components/UserContext';
 
 
 function PastMonthWorkoutsScreen({ route, navigation }) {
-    const { contextObject, setContextObject } = useContext(UserContext);
-    const [info, setInfo] = useState("");
+    const { contextObject } = useContext(UserContext);
 
+    //renders two months in a row in scroll container
     function monthsButton(firstMonth, secondMonth, monthOne, monthTwo) {
         return (
             <View style={styles.monthButtonView}>
@@ -18,12 +18,14 @@ function PastMonthWorkoutsScreen({ route, navigation }) {
         );
     };
 
+    //gets the days workouts were performed in that month and forwards user to the past days page
     function getDaysByMonth(monthName) {
         console.log(monthName);
         axios.get('http://68.172.33.6:9082/workouts/getWorkoutsByMonth/' + contextObject.username + '/' + monthName + '-2021', { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
             .then(response => navigation.navigate('PastDaysWorkouts', { dates: response.data, month: monthName, year: route.params.dates[0].substring(24, 28), })).catch(e => console.log(e));
     }
 
+    //conditionally renders the month button
     function monthButton(dis, nam) {
         if (dis == true) {
             return (
@@ -40,11 +42,13 @@ function PastMonthWorkoutsScreen({ route, navigation }) {
         }
     }
 
+    //handles going back to year page
     function goBack() {
         axios.get('http://68.172.33.6:9082/workouts/getWorkoutsByUser/' + contextObject.username, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
             .then(response => navigation.navigate('PastYearWorkouts', { dates: response.data, })).catch(e => console.log(e));
     }
 
+    //renders the year that wa selected
     function yearButton() {
         return (
             <View style={styles.yearButtonView}>
@@ -55,6 +59,7 @@ function PastMonthWorkoutsScreen({ route, navigation }) {
         );
     };
 
+    //sets the value for months with workouts
     function monthMenu() {
         var butJan = false; var butFeb = false; var butMar = false; var butApr = false;
         var butMay = false; var butJun = false; var butJul = false; var butAug = false;
@@ -102,7 +107,6 @@ function PastMonthWorkoutsScreen({ route, navigation }) {
                     break;
             }
         };
-
         return (
             <ScrollView style={styles.scrollContainer}>
                 { monthsButton('Jan', 'Feb', butJan, butFeb)}
@@ -120,7 +124,6 @@ function PastMonthWorkoutsScreen({ route, navigation }) {
     return (
         <View style={styles.container}>
             <Navbar />
-            {console.log(route.params)}
             {yearButton()}
             {monthMenu()}
         </View>

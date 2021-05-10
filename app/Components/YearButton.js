@@ -7,8 +7,9 @@ import { UserContext } from '../Components/UserContext';
 
 function yearButton({ year }) {
     const navigation = useNavigation();
-    const { contextObject, setContextObject } = useContext(UserContext);
+    const { contextObject } = useContext(UserContext);
 
+    //gets the months with workouts in that year and redirects user to past months page
     function goToMonths() {
         axios.get('http://68.172.33.6:9082/workouts/getWorkoutsByYear/' + contextObject.username + '/' + year, { headers: { "Authorization": `Bearer ${contextObject.jwt}` } })
             .then(response => navigation.navigate('PastMonthWorkouts', { dates: response.data, })).catch(e => console.log(e));

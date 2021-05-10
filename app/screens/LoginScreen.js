@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { Text, Image, StyleSheet, TouchableOpacity, View, TextInput } from 'react-native';
 import axios from 'axios';
 
@@ -10,20 +10,22 @@ function LoginScreen({ navigation }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const { contextObject, setContextObject } = useContext(UserContext);
+    const { contextObject } = useContext(UserContext);
 
+    //Checks if user is in database and password is correct
     function login() {
         axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
-            .then(response => loggedIn(response.data.substring(1, response.data.indexOf(',')),
-                response.data.substring(response.data.indexOf(' ') + 1, response.data.indexOf(']')))).catch(e => console.log(e));
+            .then(response => loggedIn(response.data.jwt, response.data.userType, response.data.firstName + " " + response.data.lastName)).catch(e => console.log(e));
     }
 
-    function loggedIn(myjwt, userType) {
+    //sets app context and redirects to Home page
+    function loggedIn(myjwt, userType, name) {
+        contextObject.name = name;
         contextObject.username = username;
         contextObject.userType = userType;
         contextObject.jwt = myjwt;
         axios.get('http://68.172.33.6:9083/exercises/allRoots', { headers: { "Authorization": `Bearer ${myjwt}` } })
-            .then(response => navigation.navigate('Home', { branches: response.data, })).catch(e => console.log(e));
+            .then(response => navigation.navigate('Home', { branches: response.data, childrenType: 'branch', parentID: 'root', })).catch(e => console.log(e));
     }
 
     return (
@@ -106,8 +108,3 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
-
-// () => axios.get('http://68.172.33.6:9081/user/loginAttempt/' + username + '/' + password)
-//                     .then(response => setjwt(response.data)).catch(e => console.log(e))
-//                     .then(console.log(jwt)).then(() => navigation.navigate('Home', props = { jwt }))
-// componentDidMount(response.data)

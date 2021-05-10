@@ -15,7 +15,6 @@ function AddBranchScreen({ navigation, route }) {
 
     const [branchName, setBranchName] = useState('');
     const { contextObject } = useContext(UserContext);
-    const [modalVisible, setModalVisible] = useState(false);
 
     //Handles the axios Post for adding a branch to database
     function createBranch() {

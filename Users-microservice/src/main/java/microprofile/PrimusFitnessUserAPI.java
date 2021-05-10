@@ -70,7 +70,7 @@ public class PrimusFitnessUserAPI {
         for (Document doc: document){
             documents.add(doc.toJson());
         }
-        //mongoClient.close();
+        mongoClient.close();
         return Response.ok(documents.toString(), MediaType.APPLICATION_JSON).build();
     }
 
@@ -84,6 +84,7 @@ public class PrimusFitnessUserAPI {
         //check user bf doing anything here
         Document doc = Document.parse(test.toString());
         users.insertOne(doc);
+        mongoClient.close();
         return Response.ok().build();
     }
 
@@ -118,6 +119,7 @@ public class PrimusFitnessUserAPI {
             } catch (Exception e){
                 e.printStackTrace();
             }
+            mongoClient.close();
             return Response.ok(jObject.build(), MediaType.APPLICATION_JSON).build();
         }else {
             return Response.status(401).build();

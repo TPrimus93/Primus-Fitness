@@ -121,7 +121,7 @@ public class PrimusFitnessExercisesAPI {
                 tree.findOneAndReplace(oldParentNode, parentNode);
             }
         }
-        //mongoClient.close();
+        mongoClient.close();
         return Response.ok().build();
      }
 
@@ -162,7 +162,7 @@ public class PrimusFitnessExercisesAPI {
             freshParent.replace("children", siblings);
             tree.findOneAndReplace(foundParent, freshParent);
          }
-         //mongoClient.close();
+         mongoClient.close();
         return Response.ok().build();
      }
 
@@ -179,7 +179,7 @@ public class PrimusFitnessExercisesAPI {
         for (Document doc: document){
             toplevel.add(doc.toJson());
         }
-        //mongoClient.close();
+        mongoClient.close();
         //Return response in the for of a string
         return Response.ok(toplevel.toString(), MediaType.APPLICATION_JSON).build();
     }
@@ -218,11 +218,11 @@ public class PrimusFitnessExercisesAPI {
         FindIterable<Document> tempChild = tree.find(child);
         Document childFound = tempChild.cursor().next();
         if(childFound.get("parentNode").equals("null")){
-            //mongoClient.close();
+            mongoClient.close();
             return Response.ok("roots").build();
         } else {
             ObjectId parentId = childFound.get("parentNode", ObjectId.class);
-            //mongoClient.close();
+            mongoClient.close();
             return Response.ok(parentId.toString(), MediaType.APPLICATION_JSON).build();
         }
     }

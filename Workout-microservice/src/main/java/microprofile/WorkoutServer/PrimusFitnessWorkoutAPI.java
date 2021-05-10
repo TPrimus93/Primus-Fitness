@@ -56,6 +56,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.List;
 
 @RolesAllowed({"user"})
 @Path("/workouts")
@@ -85,7 +86,7 @@ public class PrimusFitnessWorkoutAPI {
         Date date = dateFormat.parse(freshDoc.getString("dateCreated"));
         freshDoc.replace("dateCreated", date);
         workoutCollection.insertOne(freshDoc);
-        //mongoClient.close();
+        mongoClient.close();
         return Response.ok().build();
     }
 
@@ -97,7 +98,7 @@ public class PrimusFitnessWorkoutAPI {
         Document test = new Document("_id", new ObjectId(id));
         FindIterable<Document> found = workoutCollection.find(test);
         String send = found.cursor().next().toJson();
-        //mongoClient.close();
+        mongoClient.close();
         return Response.ok(send, MediaType.APPLICATION_JSON).build();
     }
 
@@ -118,7 +119,7 @@ public class PrimusFitnessWorkoutAPI {
         for(Document d: found){
             sendingList.add(d.toJson());
         }
-        //mongoClient.close();
+        mongoClient.close();
         return Response.ok(sendingList.toString(), MediaType.APPLICATION_JSON).build();
     }
 
@@ -145,7 +146,7 @@ public class PrimusFitnessWorkoutAPI {
             for (int d : aList) {
                 jArrayBuilder.add(d);
             }
-            //mongoClient.close();
+            mongoClient.close();
             return Response.ok(jArrayBuilder.build(), MediaType.APPLICATION_JSON).build();
     }
 
@@ -170,7 +171,7 @@ public class PrimusFitnessWorkoutAPI {
                 sendingList.add(d.getDate("dateCreated").toString());
             }
         }
-        //mongoClient.close();
+        mongoClient.close();
         return Response.ok(sendingList.build(), MediaType.APPLICATION_JSON).build();
     }
 
@@ -205,8 +206,23 @@ public class PrimusFitnessWorkoutAPI {
                 sendingList.add(d.getDate("dateCreated").toInstant().atZone(ZoneId.systemDefault()).toLocalDate().getDayOfMonth());
             }
         }
-        //mongoClient.close();
+        mongoClient.close();
         return Response.ok(sendingList.build(), MediaType.APPLICATION_JSON).build();
+    }
+
+    @Path("/updateNotes")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateNotes(JsonObject freshNote){
+        Document workout = new Document("_id", new ObjectId(freshNote.getString("_id")));
+        FindIterable<Document> iterable = workoutCollection.find(workout);
+        Document workoutFound = iterable.cursor().next();
+        List<String> notes = workoutFound.getList("notes", String.class);
+        notes.add(freshNote.getString("addedNote"));
+        workoutFound.replace("notes", notes);
+        workoutCollection.replaceOne(workout, workoutFound);
+        mongoClient.close();
+        return Response.ok().build();
     }
 
 }

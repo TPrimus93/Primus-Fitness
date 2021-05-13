@@ -1,9 +1,9 @@
-package microprofile.UserServer;
+package microprofile.WorkoutServer;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 @ApplicationPath("/")
-public class PrimusFitnessUserServer extends Application {
+public class PrimusFitnessWorkoutServer extends Application {
 
 }

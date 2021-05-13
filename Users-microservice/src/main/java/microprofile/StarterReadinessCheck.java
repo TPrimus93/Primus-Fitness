@@ -1,24 +1,24 @@
-package microprofile.health;
+package microprofile;
 
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
-import org.eclipse.microprofile.health.Liveness;
+import org.eclipse.microprofile.health.Readiness;
 
 import javax.enterprise.context.ApplicationScoped;
 
-@Liveness
+@Readiness
 @ApplicationScoped
-public class StarterLivenessCheck implements HealthCheck {
+public class StarterReadinessCheck implements HealthCheck {
 
-    private boolean isAlive() {
-        // perform health checks here
+    private boolean isReady() {
+        // perform readiness checks, e.g. database connection, etc.
 
         return true;
     }
 	
     @Override
     public HealthCheckResponse call() {
-        boolean up = isAlive();
+        boolean up = isReady();
         return HealthCheckResponse.named(this.getClass().getSimpleName()).state(up).build();
     }
     

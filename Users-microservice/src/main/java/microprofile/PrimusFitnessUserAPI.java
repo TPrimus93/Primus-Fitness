@@ -20,35 +20,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package microprofile.UserServer;
+package microprofile;
 
+import com.ibm.websphere.security.jwt.JwtBuilder;
+import com.ibm.websphere.security.jwt.Claims;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.bson.BsonValue;
 import org.bson.Document;
 
-import javax.enterprise.context.RequestScoped;
+import javax.annotation.security.RolesAllowed;
 import javax.json.*;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import com.google.gson.Gson;
-import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-@RequestScoped
-//@RolesAllowed({"oswego.edu"})
 @Path("/user")
 public class PrimusFitnessUserAPI {
-    // Creates login username and password
-
     // Creates the db-server address
     MongoClientURI uri = new MongoClientURI(
             "mongodb+srv://PrimusAdmin:Fitness101@primusfitnesscluster.t2eiv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority");
@@ -62,43 +57,84 @@ public class PrimusFitnessUserAPI {
     MongoCollection<Document> users = database.getCollection("users");
 
     //Dumps whole db (Testing purposes)
+    //Trainer Locked
+    @RolesAllowed({"trainer"})
     @Path("/all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response dbDump(){
         ArrayList<String> documents = new ArrayList<>();
         //Gathers the specific collection we want
-        System.out.println("Check one");
         FindIterable<Document> document = users.find();
-        System.out.println("Check two");
         //Iterate through each db hit and amend it to a string
         for (Document doc: document){
             documents.add(doc.toJson());
         }
-
-        System.out.println(documents);
         mongoClient.close();
         return Response.ok(documents.toString(), MediaType.APPLICATION_JSON).build();
     }
 
-    @Path("/addUser")
+    //Allows the trainer to create a new user(Only way to access the application is to be placed in by the trainer)
+    //Trainer Locked
+    @RolesAllowed({"trainer"})
+    @Path("/createUser")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response addExercises(JsonObject test){
         //check user bf doing anything here
         Document doc = Document.parse(test.toString());
         users.insertOne(doc);
+        mongoClient.close();
         return Response.ok().build();
     }
 
-    @Path("/loginAttempt")
-    @POST
-    public Response.Status validateLogin(JsonObject userCredentials){
+    //Takes the provided credentials and checks them against the database returns a J.W.T.
+    @Path("/loginAttempt/{userName}/{password}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response validateLogin(@PathParam("userName") String userName, @PathParam("password") String password){
+        //Create an empty document to store look up var's
+        JsonObjectBuilder jObject = Json.createObjectBuilder();
         Document lookUp = new Document();
-        lookUp.append("firstName", userCredentials.get("firstName"));
-        System.out.println(lookUp.toJson());
-        return Response.Status.OK;
+        lookUp.append("userName", userName);
+        lookUp.append("password", password);
+        FindIterable<Document> findUser = users.find(lookUp);
+        //Find the user that matches that userName and password combination;
+        if(findUser.cursor().hasNext()){
+            Set<String> roles = new HashSet<>();
+            Document foundUser = findUser.cursor().next();
+            roles.add("user");
+            jObject.add("userType", "user");
+            jObject.add("firstName", foundUser.getString("firstName"));
+            jObject.add("lastName", foundUser.getString("lastName"));
+            if(foundUser.get("isTrainer").equals(true)) {
+                jObject.remove("userType");
+                roles.add("trainer");
+                jObject.add("userType", "trainer");
+            }
+            String jwt = null;
+            try {
+                jwt = buildJwt(userName,roles);
+                jObject.add("jwt", jwt);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            mongoClient.close();
+            return Response.ok(jObject.build(), MediaType.APPLICATION_JSON).build();
+        }else {
+            return Response.status(401).build();
+        }
 
+    }
+
+    //J.W.T Builder
+    private String buildJwt(String userName, Set<String> roles) throws Exception {
+        return JwtBuilder.create("jwtBuilder")
+                .claim(Claims.SUBJECT, userName)
+                .claim("upn", userName)
+                .claim("groups", roles)
+                .buildJwt()
+                .compact();
     }
 
 }

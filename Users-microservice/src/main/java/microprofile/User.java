@@ -1,4 +1,4 @@
-package microprofile.UserServer;
+package microprofile;
 
 public class User {
     //Global variable initialization

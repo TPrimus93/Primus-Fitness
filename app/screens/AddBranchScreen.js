@@ -2,14 +2,8 @@ import React, { useContext, useState } from 'react';
 import { Text, TextInput, View, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 
-
 import Navbar from '../Components/Navbar';
 import { UserContext } from '../Components/UserContext';
-
-
-
-
-//Branch Name, Discription, Gif(Maybe)
 
 function AddBranchScreen({ navigation, route }) {
 

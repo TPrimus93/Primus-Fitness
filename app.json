@@ -4,7 +4,7 @@
     "slug": "Primus_Fitness",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./app/assets/icon.png",
+    "icon": "./app/assets/PrimusFitnessIcon.png",
     "splash": {
       "image": "./app/assets/splash.png",
       "resizeMode": "contain",
@@ -27,6 +27,7 @@
     },
     "web": {
       "favicon": "./app/assets/favicon.png"
-    }
+    },
+    "description": "A Fitness App Created by Matt Ljuljic and Trevor Primus"
   }
 }
